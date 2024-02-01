@@ -33,30 +33,89 @@ class SubsetSum():
         Such that `A*z = t mod q`
         """
 
-        # construct the bases matrix B which is (m+1) by (m+n) matrix:
+        # construct the bases matrix B which is (m+n+1) by (m+n+1) matrix:
         # where .i represents the i-th dimension (i in [n])
-        # [ 1 0 .. 0   a_1.1   a_1.2 ... a_1.n ]
-        # [ 0 1 .. 0   a_2.1   a_2.2 ... a_2.n ]
+        # [ 1 0 .. 0 0      a_1.1   a_1.2 ... a_1.n ]
+        # [ 0 1 .. 0 0      a_2.1   a_2.2 ... a_2.n ]
         # [                                    ]
-        # [ 0 0 .. 1   a_m.1   a_m.2 ... a_m.n ]
-        # [ 0 0 .. 0   -t.1    -t.2  ... -t.n  ]
-        bases = IntegerMatrix(self.instance_size + 1, self.instance_size + self.dim)
+        # [ 0 0 .. 1 0      a_m.1   a_m.2 ... a_m.n ]
+        # [ 0 0 .. 0 1      -t.1    -t.2  ... -t.n  ]
+        # [ 0 0 .. 0 0      q       0     ... 0     ]
+        # [ 0 0 .. 0 0      0       q     ... 0     ]
+        # [                                         ]
+        # [ 0 0 .. 0 0      0       0     ... q     ]
+        bases = IntegerMatrix(self.instance_size + self.dim + 1, self.instance_size + self.dim + 1)
+        # diagonal value
+        for i in range(self.instance_size + self.dim + 1):
+            if i <= self.instance_size:
+                bases[i, i] = 1
+            else:
+                bases[i, i] = self.modulus
+
+        # top right
         for i in range(self.instance_size):
-            # top left identity matrix
+            if self.dim == 1:
+                bases[i, -1] = self.multiset[i]
+            else:
+                for j in range(self.dim):
+                    bases[i, self.instance_size + j] = self.multiset[i, j]
+        # middle row: target value
+        if self.dim == 1:
+            bases[self.instance_size, self.instance_size + 1] = self.modulus - self.target
+        else:
+            for j in range(self.dim):
+                bases[self.instance_size, self.instance_size + j] = self.modulus - self.target[j]
+        # print(f"bases:\n{bases}")
+
+        reduced_bases = LLL.reduction(bases)
+        # print(f"reduced:\n{reduced_bases}")
+
+        # there can be multiple solutions
+        solutions = []
+        for row in reduced_bases:
+            row = np.array(row)
+            found, sol = self.is_solution(row)
+            if found:
+                solutions.append(sol.tolist())
+        return solutions
+
+    def is_solution(self, row: np.ndarray):
+        """
+        given a row in the reduced LLL, decide if it's a potential subset sum solution
+        give (bool, solution)
+        """
+        unique_elems = set(np.unique(row[:self.instance_size]))
+        if len(unique_elems) == 2 and 0 in unique_elems:
+            if np.all(row[self.instance_size:]) % self.modulus == 0:
+                candidate_solution = row[:self.instance_size]
+                quotient = (unique_elems - {0}).pop()
+                return True, candidate_solution // quotient
+        return False, None
+
+    # TODO: WIP: this is not working yet
+    def solve_ahl(self):
+        """
+        Using [AHL] method: https://link.springer.com/chapter/10.1007/3-540-69346-7_18
+        """
+        # N1, N2 can be any positive integers
+        N1 = 100
+        N2 = 1000
+
+        bases = IntegerMatrix(self.instance_size + 1, self.instance_size + self.dim + 1)
+        for i in range(self.instance_size):
             bases[i, i] = 1
 
             if self.dim == 1:
                 bases[i, -1] = self.multiset[i]
             else:
-                for j in range(self.instance_size, self.instance_size + self.dim):
-                    bases[i, j] = self.multiset[i, j - self.instance_size]
-
+                for j in range(self.instance_size + 1, self.instance_size + self.dim + 1):
+                    bases[i, j] = N2 * self.multiset[i, j - self.instance_size - 1]
         if self.dim == 1:
-            bases[-1, self.instance_size] = self.modulus - self.target
+            bases[-1, -2] = N1
+            bases[-1, -1] = self.modulus - ((N2 * self.target) % self.modulus)
         else:
             for j in range(self.dim):
-                # bases[-1, self.instance_size + j] = self.modulus - self.target[j]
-                bases[-1, self.instance_size + j] = self.modulus - self.target[j]
+                bases[-1, self.instance_size + j + 1] = self.modulus - ((N2 * self.target[j]) % self.modulus)
         print(f"bases:\n{bases}")
 
         reduced_bases = LLL.reduction(bases)
@@ -64,35 +123,26 @@ class SubsetSum():
         print(f"reduced:\n{reduced_bases}")
         for row in reduced_bases:
             row = np.array(row)
-            if self.is_solution(row):
+            if row[self.instance_size] == N1 and np.all(row[self.instance_size + 1:] % self.modulus == 0):
                 return row[:self.instance_size].tolist()
         return None
 
-    def is_solution(self, row: np.ndarray):
-        """
-        given a row in the reduced LLL, decide if it's a potential subset sum solution
-        """
-        unique_elems = set(np.unique(row[:self.instance_size]))
-        if len(unique_elems) == 2 and 0 in unique_elems:
-            if np.all(row[self.instance_size:]) % self.modulus == 0:
-                return True
-        return False
 
 class TestSubsetSum(unittest.TestCase):
     def test_success(self):
         solution = SubsetSum(
-            np.array([1, 2, 3, 4, 5, 6, 7], dtype=np.uint32),
-            np.array(4, dtype=np.uint32),
-            11
+            np.array([101, 221, 325, 124, 552, 612, 737], dtype=np.uint32),
+            np.array(838, dtype=np.uint32),
+            1024
         ).solve()
-        self.assertEqual(solution, [0, 1, 0, 1, 0, 0, 1])
+        self.assertTrue([1, 0, 0, 0, 0, 0, 1] in solution)
 
         solution = SubsetSum(
             np.array([[1, 2], [3, 4], [5, 6]], dtype=np.uint32),
             np.array([6, 1], dtype=np.uint32),
             7
         ).solve()
-        self.assertEqual(solution, [1, 0, 1])
+        self.assertTrue([1, 0, 1] in solution)
 
 if __name__ == '__main__':
     unittest.main()
