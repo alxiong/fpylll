@@ -5,144 +5,122 @@ import numpy as np
 from fpylll import LLL, IntegerMatrix
 
 
-class SubsetSum():
+class SubsetSum:
     """
     Class for defining and solving Subset Sum problem
     """
-    def __init__(self, multiset: np.ndarray, target: np.ndarray, modulus: np.uint32):
+
+    def __init__(self, multiset: np.ndarray, target: np.ndarray):
         """
-        Define the problem instance with {a_i}, T and q
-        such that a_i, T in FF_q or FF_q^n for i in [1, m]
+        Define the problem instance with multiset {a_i} and target S
         """
-        assert multiset.dtype == np.uint32 and target.dtype == np.uint32
+        assert multiset.dtype == target.dtype
         assert multiset.ndim == target.ndim + 1
         assert multiset.ndim in [1, 2]
 
+        if target.ndim == 0:
+            multiset = np.expand_dims(multiset, axis=1)
+            target = np.expand_dims(target, axis=0)
         self.multiset = multiset
         self.target = target
-        self.modulus = modulus
+
+        # embedding dim: m
+        self.embed_dim = target.shape[0]
         # lattice dim: n
-        self.dim = 1 if target.ndim == 0 else target.shape[0]
-        # number of instances: m
-        self.instance_size = multiset.shape[0]
-        print(f"n: {self.dim}, m: {self.instance_size}")
+        self.lattice_dim = multiset.shape[0]
+
+        # d = n / log max a_i
+        self.density = np.full(
+            shape=target.shape, fill_value=self.lattice_dim
+        ) / np.log(np.max(self.multiset))
+        print(
+            f"lattice dim: {self.lattice_dim}, embedding dim: {self.embed_dim}, density: {self.density}"
+        )
 
     def solve(self):
         """
-        Solve the instance, return an array of value: `z in {0, 1}^len(self.multiset)`
-        Such that `A*z = t mod q`
+        Solve the instance, return an array of value: `z in {0, 1}^self.lattice_dim`
+        Such that `A*z = S`
+        Read more: https://hackmd.io/@alxiong/ssp-from-lll
         """
 
-        # construct the bases matrix B which is (m+n+1) by (m+n+1) matrix:
-        # where .i represents the i-th dimension (i in [n])
-        # [ 1 0 .. 0 0      a_1.1   a_1.2 ... a_1.n ]
-        # [ 0 1 .. 0 0      a_2.1   a_2.2 ... a_2.n ]
-        # [                                    ]
-        # [ 0 0 .. 1 0      a_m.1   a_m.2 ... a_m.n ]
-        # [ 0 0 .. 0 1      -t.1    -t.2  ... -t.n  ]
-        # [ 0 0 .. 0 0      q       0     ... 0     ]
-        # [ 0 0 .. 0 0      0       q     ... 0     ]
-        # [                                         ]
-        # [ 0 0 .. 0 0      0       0     ... q     ]
-        bases = IntegerMatrix(self.instance_size + self.dim + 1, self.instance_size + self.dim + 1)
-        # diagonal value
-        for i in range(self.instance_size + self.dim + 1):
-            if i <= self.instance_size:
-                bases[i, i] = 1
-            else:
-                bases[i, i] = self.modulus
+        # TODO: refine this heuristic, theory bound only say N>\sqrt n
+        N = int(10 * np.sqrt(self.lattice_dim))
+        solutions = []
 
-        # top right
-        for i in range(self.instance_size):
-            if self.dim == 1:
-                bases[i, -1] = self.multiset[i]
+        # construct the bases matrix B which is (n+1) by (n+m+1) matrix:
+        rows = self.lattice_dim + 1
+        cols = self.lattice_dim + self.embed_dim + 1
+        bases = IntegerMatrix(rows, cols)
+        ## first n row
+        for row in range(rows - 1):
+            bases[row, row] = 2
+            for col in range(self.embed_dim):
+                bases[row, self.lattice_dim + 1 + col] = N * self.multiset[row][col]
+        ## last row
+        for col in range(cols):
+            if col <= self.lattice_dim:
+                bases[rows - 1, col] = 1
             else:
-                for j in range(self.dim):
-                    bases[i, self.instance_size + j] = self.multiset[i, j]
-        # middle row: target value
-        if self.dim == 1:
-            bases[self.instance_size, self.instance_size + 1] = self.modulus - self.target
-        else:
-            for j in range(self.dim):
-                bases[self.instance_size, self.instance_size + j] = self.modulus - self.target[j]
+                bases[rows - 1, col] = N * self.target[col - self.lattice_dim - 1]
         # print(f"bases:\n{bases}")
 
         reduced_bases = LLL.reduction(bases)
         # print(f"reduced:\n{reduced_bases}")
 
         # there can be multiple solutions
-        solutions = []
         for row in reduced_bases:
             row = np.array(row)
-            found, sol = self.is_solution(row)
-            if found:
-                solutions.append(sol.tolist())
+            if self.is_solution(row):
+                sol = np.abs(row[: self.lattice_dim] - row[self.lattice_dim]) // 2
+                solutions.append(sol)
+
         return solutions
 
     def is_solution(self, row: np.ndarray):
         """
         given a row in the reduced LLL, decide if it's a potential subset sum solution
-        give (bool, solution)
         """
-        unique_elems = set(np.unique(row[:self.instance_size]))
-        if len(unique_elems) == 2 and 0 in unique_elems:
-            if np.all(row[self.instance_size:]) % self.modulus == 0:
-                candidate_solution = row[:self.instance_size]
-                quotient = (unique_elems - {0}).pop()
-                return True, candidate_solution // quotient
-        return False, None
+        if (
+            row[self.lattice_dim] == 1
+            and np.all(row[self.lattice_dim + 1 :] == 0)
+            and np.all(np.abs(row[: self.lattice_dim]) == 1)
+        ):
+            return True
+        return False
 
-    # TODO: WIP: this is not working yet
-    def solve_ahl(self):
+    def solve_and_verify(self, expected: np.ndarray):
         """
-        Using [AHL] method: https://link.springer.com/chapter/10.1007/3-540-69346-7_18
+        Solve the instance and check if the expected answer is among the found solutions
+        Return two booleans, first indicates if the `expected` is found, second indicates
+        an alternative subset is found
         """
-        # N1, N2 can be any positive integers
-        N1 = 100
-        N2 = 1000
-
-        bases = IntegerMatrix(self.instance_size + 1, self.instance_size + self.dim + 1)
-        for i in range(self.instance_size):
-            bases[i, i] = 1
-
-            if self.dim == 1:
-                bases[i, -1] = self.multiset[i]
-            else:
-                for j in range(self.instance_size + 1, self.instance_size + self.dim + 1):
-                    bases[i, j] = N2 * self.multiset[i, j - self.instance_size - 1]
-        if self.dim == 1:
-            bases[-1, -2] = N1
-            bases[-1, -1] = self.modulus - ((N2 * self.target) % self.modulus)
-        else:
-            for j in range(self.dim):
-                bases[-1, self.instance_size + j + 1] = self.modulus - ((N2 * self.target[j]) % self.modulus)
-        print(f"bases:\n{bases}")
-
-        reduced_bases = LLL.reduction(bases)
-
-        print(f"reduced:\n{reduced_bases}")
-        for row in reduced_bases:
-            row = np.array(row)
-            if row[self.instance_size] == N1 and np.all(row[self.instance_size + 1:] % self.modulus == 0):
-                return row[:self.instance_size].tolist()
-        return None
-
+        solutions = self.solve()
+        found = np.any([np.all(expected == sol) for sol in solutions])
+        found_alt = found and len(solutions) > 1
+        if found:
+            print("Original solution found!")
+        if found_alt:
+            print("Alternative solution found!")
+        if not found and self.density > 1:
+            print("Solution not found, consider a lower density for SSP.")
+        return found, found_alt
 
 class TestSubsetSum(unittest.TestCase):
     def test_success(self):
-        solution = SubsetSum(
-            np.array([101, 221, 325, 124, 552, 612, 737], dtype=np.uint32),
-            np.array(838, dtype=np.uint32),
-            1024
-        ).solve()
-        self.assertTrue([1, 0, 0, 0, 0, 0, 1] in solution)
+        np.random.seed(42)
+        multiset = np.random.randint(-1000, 10000, size=10)
+        subset_bit_vector = np.random.choice([0, 1], size=10, p=[0.8, 0.2])
+        target = np.sum(multiset * subset_bit_vector.astype(bool)[:], axis=0)
+        self.assertTrue(SubsetSum(multiset, target).solve_and_verify(subset_bit_vector)[0])
 
-        solution = SubsetSum(
-            np.array([[1, 2], [3, 4], [5, 6]], dtype=np.uint32),
-            np.array([6, 1], dtype=np.uint32),
-            7
-        ).solve()
-        self.assertTrue([1, 0, 1] in solution)
+        multiset = np.random.randint(-100, 100, size=(10, 5))
+        subset_bit_vector = np.random.randint(2, size=10)
+        target = np.sum(
+            multiset * subset_bit_vector.astype(bool)[:, np.newaxis], axis=0
+        )
+        self.assertTrue(SubsetSum(multiset, target).solve_and_verify(subset_bit_vector)[0])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
