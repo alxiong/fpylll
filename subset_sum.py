@@ -30,9 +30,9 @@ class SubsetSum:
         self.lattice_dim = multiset.shape[0]
 
         # d = n / log max a_i
-        self.density = np.full(
-            shape=target.shape, fill_value=self.lattice_dim
-        ) / np.log(np.max(self.multiset))
+        self.density = np.full(shape=target.shape, fill_value=self.lattice_dim) / float(
+            np.log2(np.max(self.multiset))
+        )
         print(
             f"lattice dim: {self.lattice_dim}, embedding dim: {self.embed_dim}, density: {self.density}"
         )
@@ -73,7 +73,7 @@ class SubsetSum:
             row = np.array(row)
             if self.is_solution(row):
                 sol = np.abs(row[: self.lattice_dim] - row[self.lattice_dim]) // 2
-                solutions.append(sol)
+                solutions.append(sol.astype(bool))
 
         return solutions
 
@@ -97,29 +97,54 @@ class SubsetSum:
         """
         solutions = self.solve()
         found = np.any([np.all(expected == sol) for sol in solutions])
-        found_alt = found and len(solutions) > 1
+        forged = (
+            np.any(
+                [
+                    (
+                        np.count_nonzero(sol) == np.count_nonzero(expected)
+                        and np.any(expected != sol)
+                    )
+                    for sol in solutions
+                ]
+            )
+        )
+        found_alt = not found and not forged and len(solutions) > 0
+        # print(f"solutions: {solutions}")
         if found:
             print("Original solution found!")
-        if found_alt:
-            print("Alternative solution found!")
-        if not found and self.density > 1:
+        elif forged:
+            print("Forgery found!")
+        elif found_alt:
+            print("Alternative (non-forgery) solution found!")
+        else:
             print("Solution not found, consider a lower density for SSP.")
         return found, found_alt
+
 
 class TestSubsetSum(unittest.TestCase):
     def test_success(self):
         np.random.seed(42)
         multiset = np.random.randint(-1000, 10000, size=10)
-        subset_bit_vector = np.random.choice([0, 1], size=10, p=[0.8, 0.2])
-        target = np.sum(multiset * subset_bit_vector.astype(bool)[:], axis=0)
-        self.assertTrue(SubsetSum(multiset, target).solve_and_verify(subset_bit_vector)[0])
-
-        multiset = np.random.randint(-100, 100, size=(10, 5))
-        subset_bit_vector = np.random.randint(2, size=10)
-        target = np.sum(
-            multiset * subset_bit_vector.astype(bool)[:, np.newaxis], axis=0
+        subset_bit_vector = np.random.choice([0, 1], size=10, p=[0.8, 0.2]).astype(bool)
+        target = np.sum(multiset * subset_bit_vector[:], axis=0)
+        self.assertTrue(
+            SubsetSum(multiset, target).solve_and_verify(
+                subset_bit_vector.astype(bool)
+            )[0]
         )
-        self.assertTrue(SubsetSum(multiset, target).solve_and_verify(subset_bit_vector)[0])
+
+        n = 100
+        multiset = np.random.randint(-(2**31), 2**31, size=(n, 50_000))
+        p = 64 / n
+        subset_bit_vector = np.random.choice([0, 1], size=n, p=[1 - p, p]).astype(bool)
+        target = np.sum(
+            multiset * subset_bit_vector[:, np.newaxis], axis=0
+        )
+        self.assertTrue(
+            SubsetSum(multiset, target).solve_and_verify(
+                subset_bit_vector.astype(bool)
+            )[0]
+        )
 
 
 if __name__ == "__main__":
