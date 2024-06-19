@@ -5,8 +5,6 @@ Shortest and Closest Vectors.
 .. moduleauthor:: Martin R. Albrecht <martinralbrecht+fpylll@googlemail.com>
 """
 
-include "fpylll/config.pxi"
-
 import warnings
 from cysignals.signals cimport sig_on, sig_off
 

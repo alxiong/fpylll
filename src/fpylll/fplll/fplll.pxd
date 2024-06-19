@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-#
+#
 # General Includes
 
 from fpylll.gmp.mpz cimport mpz_t
@@ -64,7 +64,6 @@ cdef extern from "fplll/fplll_config.h":
     bool FPLLL_HAVE_RECURSIVE_ENUM
     int FPLLL_MAX_PARALLEL_ENUM_DIM
 
-#
 # Numbers
 
 cdef extern from "fplll/nr/nr.h" namespace "fplll":
@@ -137,7 +136,6 @@ cdef extern from "fplll/nr/nr.h":
         pass
     ctypedef dpe_struct *dpe_t
 
-
 # Random Numbers
 
 
@@ -162,7 +160,6 @@ cdef extern from "fplll/nr/nr.h" namespace "fplll":
         @staticmethod
         gmp_randstate_t& get_gmp_state()
 
-
 # Definitions & Enums
 
 cdef extern from "fplll/defs.h" namespace "fplll":
@@ -976,7 +973,6 @@ cdef extern from "fplll/threadpool.h" namespace "fplll":
     int set_threads(int th)
 
 
-
 # Highlevel Functions
 
 cdef extern from "fplll/fplll.h" namespace "fplll":

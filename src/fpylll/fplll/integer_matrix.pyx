@@ -6,8 +6,6 @@ Dense matrices over the Integers.
 
 """
 
-include "fpylll/config.pxi"
-
 from cpython cimport PyIndex_Check
 from cysignals.signals cimport sig_on, sig_off
 

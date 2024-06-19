@@ -5,8 +5,6 @@ Parameters for Block Korkine Zolotarev algorithm.
 ..  moduleauthor:: Martin R.  Albrecht <martinralbrecht+fpylll@googlemail.com>
 """
 
-include "fpylll/config.pxi"
-
 from cysignals.signals cimport sig_on, sig_off
 
 from .fplll cimport BKZParam as BKZParam_c

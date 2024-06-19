@@ -17,8 +17,6 @@ triangular.
 
 """
 
-include "fpylll/config.pxi"
-
 from cysignals.signals cimport sig_on, sig_off
 
 from .decl cimport mat_gso_mpz_d, mat_gso_mpz_ld, mat_gso_mpz_dpe, mat_gso_mpz_mpfr
@@ -43,12 +41,8 @@ from fpylll.io cimport vector_fp_nr_barf, vector_fp_nr_slurp, vector_z_nr_slurp
 from fpylll.io cimport mpz_get_python
 from .integer_matrix cimport IntegerMatrix
 
-IF HAVE_LONG_DOUBLE:
-    from .decl cimport ld_t
-
-IF HAVE_QD:
-    from .decl cimport mat_gso_mpz_dd, mat_gso_mpz_qd, mat_gso_long_dd, mat_gso_long_qd, dd_t, qd_t
-    from .fplll cimport FT_DD, FT_QD
+from .decl cimport mat_gso_mpz_dd, mat_gso_mpz_qd, mat_gso_long_dd, mat_gso_long_qd, dd_t, qd_t
+from .fplll cimport FT_DD, FT_QD
 
 class MatGSORowOpContext(object):
     """
@@ -195,11 +189,7 @@ cdef class MatGSO:
                     self._type = mat_gso_mpz_d
                     self._core.mpz_d = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[d_t]]*>new MatGSO_c[Z_NR[mpz_t],FP_NR[d_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
                 elif float_type_ == FT_LONG_DOUBLE:
-                    IF HAVE_LONG_DOUBLE:
-                        self._type = mat_gso_mpz_ld
-                        self._core.mpz_ld = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[ld_t]]*> new MatGSO_c[Z_NR[mpz_t],FP_NR[ld_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
-                    ELSE:
-                        raise ValueError("Float type '%s' not understood." % float_type)
+                    raise ValueError("Float type '%s' not understood." % float_type)
                 elif float_type_ == FT_DPE:
                     self._type = mat_gso_mpz_dpe
                     self._core.mpz_dpe = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[dpe_t]]*> new MatGSO_c[Z_NR[mpz_t],FP_NR[dpe_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
@@ -207,27 +197,20 @@ cdef class MatGSO:
                     self._type = mat_gso_mpz_mpfr
                     self._core.mpz_mpfr = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[mpfr_t]]*> new MatGSO_c[Z_NR[mpz_t],FP_NR[mpfr_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
                 else:
-                    IF HAVE_QD:
-                        if float_type_ == FT_DD:
-                            self._type = mat_gso_mpz_dd
-                            self._core.mpz_dd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[dd_t]]*> new MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
-                        elif float_type_ == FT_QD:
-                            self._type = mat_gso_mpz_qd
-                            self._core.mpz_qd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[qd_t]]*> new MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
-                        else:
-                            raise ValueError("Float type '%s' not understood."%float_type)
-                    ELSE:
+                    if float_type_ == FT_DD:
+                        self._type = mat_gso_mpz_dd
+                        self._core.mpz_dd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[dd_t]]*> new MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
+                    elif float_type_ == FT_QD:
+                        self._type = mat_gso_mpz_qd
+                        self._core.mpz_qd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[qd_t]]*> new MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
+                    else:
                         raise ValueError("Float type '%s' not understood."%float_type)
             elif B._type == ZT_LONG:
                 if float_type_ == FT_DOUBLE:
                     self._type = mat_gso_long_d
                     self._core.long_d = <MatGSOInterface_c[Z_NR[long],FP_NR[d_t]]*> new MatGSO_c[Z_NR[long],FP_NR[d_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
                 elif float_type_ == FT_LONG_DOUBLE:
-                    IF HAVE_LONG_DOUBLE:
-                        self._type = mat_gso_long_ld
-                        self._core.long_ld = <MatGSOInterface_c[Z_NR[long],FP_NR[ld_t]]*> new MatGSO_c[Z_NR[long],FP_NR[ld_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
-                    ELSE:
-                        raise ValueError("Float type '%s' not understood." % float_type)
+                    raise ValueError("Float type '%s' not understood." % float_type)
                 elif float_type_ == FT_DPE:
                     self._type = mat_gso_long_dpe
                     self._core.long_dpe = <MatGSOInterface_c[Z_NR[long],FP_NR[dpe_t]]*> new MatGSO_c[Z_NR[long],FP_NR[dpe_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
@@ -235,16 +218,13 @@ cdef class MatGSO:
                     self._type = mat_gso_long_mpfr
                     self._core.long_mpfr = <MatGSOInterface_c[Z_NR[long],FP_NR[mpfr_t]]*>new MatGSO_c[Z_NR[long],FP_NR[mpfr_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
                 else:
-                    IF HAVE_QD:
-                        if float_type_ == FT_DD:
-                            self._type = mat_gso_long_dd
-                            self._core.long_dd = <MatGSOInterface_c[Z_NR[long],FP_NR[dd_t]]*>new MatGSO_c[Z_NR[long],FP_NR[dd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
-                        elif float_type_ == FT_QD:
-                            self._type = mat_gso_long_qd
-                            self._core.long_qd = <MatGSOInterface_c[Z_NR[long],FP_NR[qd_t]]*>new MatGSO_c[Z_NR[long],FP_NR[qd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
-                        else:
-                            raise ValueError("Float type '%s' not understood."%float_type)
-                    ELSE:
+                    if float_type_ == FT_DD:
+                        self._type = mat_gso_long_dd
+                        self._core.long_dd = <MatGSOInterface_c[Z_NR[long],FP_NR[dd_t]]*>new MatGSO_c[Z_NR[long],FP_NR[dd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
+                    elif float_type_ == FT_QD:
+                        self._type = mat_gso_long_qd
+                        self._core.long_qd = <MatGSOInterface_c[Z_NR[long],FP_NR[qd_t]]*>new MatGSO_c[Z_NR[long],FP_NR[qd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
+                    else:
                         raise ValueError("Float type '%s' not understood."%float_type)
             self.B = B
         else:
@@ -256,11 +236,7 @@ cdef class MatGSO:
                     self._type = mat_gso_mpz_d
                     self._core.mpz_d = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[d_t]]*>new MatGSOGram_c[Z_NR[mpz_t],FP_NR[d_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
                 elif float_type_ == FT_LONG_DOUBLE:
-                    IF HAVE_LONG_DOUBLE:
-                        self._type = mat_gso_mpz_ld
-                        self._core.mpz_ld = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[ld_t]]*> new MatGSOGram_c[Z_NR[mpz_t],FP_NR[ld_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
-                    ELSE:
-                        raise ValueError("Float type '%s' not understood." % float_type)
+                    raise ValueError("Float type '%s' not understood." % float_type)
                 elif float_type_ == FT_DPE:
                     self._type = mat_gso_mpz_dpe
                     self._core.mpz_dpe = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[dpe_t]]*> new MatGSOGram_c[Z_NR[mpz_t],FP_NR[dpe_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
@@ -268,27 +244,20 @@ cdef class MatGSO:
                     self._type = mat_gso_mpz_mpfr
                     self._core.mpz_mpfr = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[mpfr_t]]*> new MatGSOGram_c[Z_NR[mpz_t],FP_NR[mpfr_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
                 else:
-                    IF HAVE_QD:
-                        if float_type_ == FT_DD:
-                            self._type = mat_gso_mpz_dd
-                            self._core.mpz_dd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[dd_t]]*> new MatGSOGram_c[Z_NR[mpz_t],FP_NR[dd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
-                        elif float_type_ == FT_QD:
-                            self._type = mat_gso_mpz_qd
-                            self._core.mpz_qd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[qd_t]]*> new MatGSOGram_c[Z_NR[mpz_t],FP_NR[qd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
-                        else:
-                            raise ValueError("Float type '%s' not understood."%float_type)
-                    ELSE:
+                    if float_type_ == FT_DD:
+                        self._type = mat_gso_mpz_dd
+                        self._core.mpz_dd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[dd_t]]*> new MatGSOGram_c[Z_NR[mpz_t],FP_NR[dd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
+                    elif float_type_ == FT_QD:
+                        self._type = mat_gso_mpz_qd
+                        self._core.mpz_qd = <MatGSOInterface_c[Z_NR[mpz_t],FP_NR[qd_t]]*> new MatGSOGram_c[Z_NR[mpz_t],FP_NR[qd_t]](b_m[0], u_m[0], u_inv_t_m[0], flags)
+                    else:
                         raise ValueError("Float type '%s' not understood."%float_type)
             elif B._type == ZT_LONG:
                 if float_type_ == FT_DOUBLE:
                     self._type = mat_gso_long_d
                     self._core.long_d = <MatGSOInterface_c[Z_NR[long],FP_NR[d_t]]*> new MatGSOGram_c[Z_NR[long],FP_NR[d_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
                 elif float_type_ == FT_LONG_DOUBLE:
-                    IF HAVE_LONG_DOUBLE:
-                        self._type = mat_gso_long_ld
-                        self._core.long_ld = <MatGSOInterface_c[Z_NR[long],FP_NR[ld_t]]*> new MatGSOGram_c[Z_NR[long],FP_NR[ld_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
-                    ELSE:
-                        raise ValueError("Float type '%s' not understood." % float_type)
+                    raise ValueError("Float type '%s' not understood." % float_type)
                 elif float_type_ == FT_DPE:
                     self._type = mat_gso_long_dpe
                     self._core.long_dpe = <MatGSOInterface_c[Z_NR[long],FP_NR[dpe_t]]*> new MatGSOGram_c[Z_NR[long],FP_NR[dpe_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
@@ -296,16 +265,13 @@ cdef class MatGSO:
                     self._type = mat_gso_long_mpfr
                     self._core.long_mpfr = <MatGSOInterface_c[Z_NR[long],FP_NR[mpfr_t]]*>new MatGSOGram_c[Z_NR[long],FP_NR[mpfr_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
                 else:
-                    IF HAVE_QD:
-                        if float_type_ == FT_DD:
-                            self._type = mat_gso_long_dd
-                            self._core.long_dd = <MatGSOInterface_c[Z_NR[long],FP_NR[dd_t]]*>new MatGSOGram_c[Z_NR[long],FP_NR[dd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
-                        elif float_type_ == FT_QD:
-                            self._type = mat_gso_long_qd
-                            self._core.long_qd = <MatGSOInterface_c[Z_NR[long],FP_NR[qd_t]]*>new MatGSOGram_c[Z_NR[long],FP_NR[qd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
-                        else:
-                            raise ValueError("Float type '%s' not understood."%float_type)
-                    ELSE:
+                    if float_type_ == FT_DD:
+                        self._type = mat_gso_long_dd
+                        self._core.long_dd = <MatGSOInterface_c[Z_NR[long],FP_NR[dd_t]]*>new MatGSOGram_c[Z_NR[long],FP_NR[dd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
+                    elif float_type_ == FT_QD:
+                        self._type = mat_gso_long_qd
+                        self._core.long_qd = <MatGSOInterface_c[Z_NR[long],FP_NR[qd_t]]*>new MatGSOGram_c[Z_NR[long],FP_NR[qd_t]](b_l[0], u_l[0], u_inv_t_l[0], flags)
+                    else:
                         raise ValueError("Float type '%s' not understood."%float_type)
             self._G = B
 
@@ -315,59 +281,42 @@ cdef class MatGSO:
     def __dealloc__(self):
         # We are making sure the correct destructor is called, even when it's not virtual, by explicit casting
         cdef MatGSO_c[Z_NR[long], FP_NR[double]]* gso_long_d
-        IF HAVE_LONG_DOUBLE:
-            cdef MatGSO_c[Z_NR[long], FP_NR[ld_t]]* gso_long_ld
         cdef MatGSO_c[Z_NR[long], FP_NR[dpe_t]]* gso_long_dpe
-        IF HAVE_QD:
-            cdef MatGSO_c[Z_NR[long], FP_NR[dd_t]]* gso_long_dd
-            cdef MatGSO_c[Z_NR[long], FP_NR[qd_t]]* gso_long_qd
+        cdef MatGSO_c[Z_NR[long], FP_NR[dd_t]]* gso_long_dd
+        cdef MatGSO_c[Z_NR[long], FP_NR[qd_t]]* gso_long_qd
         cdef MatGSO_c[Z_NR[long], FP_NR[mpfr_t]]* gso_long_mpfr
 
         cdef MatGSO_c[Z_NR[mpz_t], FP_NR[double]]* gso_mpz_d
-        IF HAVE_LONG_DOUBLE:
-            cdef MatGSO_c[Z_NR[mpz_t], FP_NR[ld_t]]* gso_mpz_ld
         cdef MatGSO_c[Z_NR[mpz_t], FP_NR[dpe_t]]* gso_mpz_dpe
-        IF HAVE_QD:
-            cdef MatGSO_c[Z_NR[mpz_t], FP_NR[dd_t]]* gso_mpz_dd
-            cdef MatGSO_c[Z_NR[mpz_t], FP_NR[qd_t]]* gso_mpz_qd
+        cdef MatGSO_c[Z_NR[mpz_t], FP_NR[dd_t]]* gso_mpz_dd
+        cdef MatGSO_c[Z_NR[mpz_t], FP_NR[qd_t]]* gso_mpz_qd
         cdef MatGSO_c[Z_NR[mpz_t], FP_NR[mpfr_t]]* gso_mpz_mpfr
 
         cdef MatGSOGram_c[Z_NR[long], FP_NR[double]]* gram_long_d
-        IF HAVE_LONG_DOUBLE:
-            cdef MatGSOGram_c[Z_NR[long], FP_NR[ld_t]]* gram_long_ld
         cdef MatGSOGram_c[Z_NR[long], FP_NR[dpe_t]]* gram_long_dpe
-        IF HAVE_QD:
-            cdef MatGSOGram_c[Z_NR[long], FP_NR[dd_t]]* gram_long_dd
-            cdef MatGSOGram_c[Z_NR[long], FP_NR[qd_t]]* gram_long_qd
+        cdef MatGSOGram_c[Z_NR[long], FP_NR[dd_t]]* gram_long_dd
+        cdef MatGSOGram_c[Z_NR[long], FP_NR[qd_t]]* gram_long_qd
         cdef MatGSOGram_c[Z_NR[long], FP_NR[mpfr_t]]* gram_long_mpfr
 
         cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[double]]* gram_mpz_d
-        IF HAVE_LONG_DOUBLE:
-            cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[ld_t]]* gram_mpz_ld
         cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[dpe_t]]* gram_mpz_dpe
-        IF HAVE_QD:
-            cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[dd_t]]* gram_mpz_dd
-            cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[qd_t]]* gram_mpz_qd
+        cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[dd_t]]* gram_mpz_dd
+        cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[qd_t]]* gram_mpz_qd
         cdef MatGSOGram_c[Z_NR[mpz_t], FP_NR[mpfr_t]]* gram_mpz_mpfr
 
         if self._alg == mat_gso_gso_t:
             if self._type == mat_gso_long_d:
                 gso_long_d = <MatGSO_c[Z_NR[long], FP_NR[double]]*>self._core.long_d
                 del gso_long_d
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_long_ld:
-                    gso_long_ld = <MatGSO_c[Z_NR[long], FP_NR[ld_t]]*>self._core.long_ld
-                    del gso_long_ld
             if self._type == mat_gso_long_dpe:
                 gso_long_dpe = <MatGSO_c[Z_NR[long], FP_NR[dpe_t]]*>self._core.long_dpe
                 del gso_long_dpe
-            IF HAVE_QD:
-                if self._type == mat_gso_long_dd:
-                    gso_long_dd = <MatGSO_c[Z_NR[long], FP_NR[dd_t]]*>self._core.long_dd
-                    del gso_long_dd
-                if self._type == mat_gso_long_qd:
-                    gso_long_qd = <MatGSO_c[Z_NR[long], FP_NR[qd_t]]*>self._core.long_qd
-                    del gso_long_qd
+            if self._type == mat_gso_long_dd:
+                gso_long_dd = <MatGSO_c[Z_NR[long], FP_NR[dd_t]]*>self._core.long_dd
+                del gso_long_dd
+            if self._type == mat_gso_long_qd:
+                gso_long_qd = <MatGSO_c[Z_NR[long], FP_NR[qd_t]]*>self._core.long_qd
+                del gso_long_qd
             if self._type == mat_gso_long_mpfr:
                 gso_long_mpfr = <MatGSO_c[Z_NR[long], FP_NR[mpfr_t]]*>self._core.long_mpfr
                 del gso_long_mpfr
@@ -375,20 +324,15 @@ cdef class MatGSO:
             if self._type == mat_gso_mpz_d:
                 gso_mpz_d = <MatGSO_c[Z_NR[mpz_t], FP_NR[double]]*>self._core.mpz_d
                 del gso_mpz_d
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_mpz_ld:
-                    gso_mpz_ld = <MatGSO_c[Z_NR[mpz_t], FP_NR[ld_t]]*>self._core.mpz_ld
-                    del gso_mpz_ld
             if self._type == mat_gso_mpz_dpe:
                 gso_mpz_dpe = <MatGSO_c[Z_NR[mpz_t], FP_NR[dpe_t]]*>self._core.mpz_dpe
                 del gso_mpz_dpe
-            IF HAVE_QD:
-                if self._type == mat_gso_mpz_dd:
-                    gso_mpz_dd = <MatGSO_c[Z_NR[mpz_t], FP_NR[dd_t]]*>self._core.mpz_dd
-                    del gso_mpz_dd
-                if self._type == mat_gso_mpz_qd:
-                    gso_mpz_qd = <MatGSO_c[Z_NR[mpz_t], FP_NR[qd_t]]*>self._core.mpz_qd
-                    del gso_mpz_qd
+            if self._type == mat_gso_mpz_dd:
+                gso_mpz_dd = <MatGSO_c[Z_NR[mpz_t], FP_NR[dd_t]]*>self._core.mpz_dd
+                del gso_mpz_dd
+            if self._type == mat_gso_mpz_qd:
+                gso_mpz_qd = <MatGSO_c[Z_NR[mpz_t], FP_NR[qd_t]]*>self._core.mpz_qd
+                del gso_mpz_qd
             if self._type == mat_gso_mpz_mpfr:
                 gso_mpz_mpfr = <MatGSO_c[Z_NR[mpz_t], FP_NR[mpfr_t]]*>self._core.mpz_mpfr
                 del gso_mpz_mpfr
@@ -396,20 +340,15 @@ cdef class MatGSO:
             if self._type == mat_gso_long_d:
                 gram_long_d = <MatGSOGram_c[Z_NR[long], FP_NR[double]]*>self._core.long_d
                 del gram_long_d
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_long_ld:
-                    gram_long_ld = <MatGSOGram_c[Z_NR[long], FP_NR[ld_t]]*>self._core.long_ld
-                    del gram_long_ld
             if self._type == mat_gso_long_dpe:
                 gram_long_dpe = <MatGSOGram_c[Z_NR[long], FP_NR[dpe_t]]*>self._core.long_dpe
                 del gram_long_dpe
-            IF HAVE_QD:
-                if self._type == mat_gso_long_dd:
-                    gram_long_dd = <MatGSOGram_c[Z_NR[long], FP_NR[dd_t]]*>self._core.long_dd
-                    del gram_long_dd
-                if self._type == mat_gso_long_qd:
-                    gram_long_qd = <MatGSOGram_c[Z_NR[long], FP_NR[qd_t]]*>self._core.long_qd
-                    del gram_long_qd
+            if self._type == mat_gso_long_dd:
+                gram_long_dd = <MatGSOGram_c[Z_NR[long], FP_NR[dd_t]]*>self._core.long_dd
+                del gram_long_dd
+            if self._type == mat_gso_long_qd:
+                gram_long_qd = <MatGSOGram_c[Z_NR[long], FP_NR[qd_t]]*>self._core.long_qd
+                del gram_long_qd
             if self._type == mat_gso_long_mpfr:
                 gram_long_mpfr = <MatGSOGram_c[Z_NR[long], FP_NR[mpfr_t]]*>self._core.long_mpfr
                 del gram_long_mpfr
@@ -417,20 +356,15 @@ cdef class MatGSO:
             if self._type == mat_gso_mpz_d:
                 gram_mpz_d = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[double]]*>self._core.mpz_d
                 del gram_mpz_d
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_mpz_ld:
-                    gram_mpz_ld = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[ld_t]]*>self._core.mpz_ld
-                    del gram_mpz_ld
             if self._type == mat_gso_mpz_dpe:
                 gram_mpz_dpe = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[dpe_t]]*>self._core.mpz_dpe
                 del gram_mpz_dpe
-            IF HAVE_QD:
-                if self._type == mat_gso_mpz_dd:
-                    gram_mpz_dd = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[dd_t]]*>self._core.mpz_dd
-                    del gram_mpz_dd
-                if self._type == mat_gso_mpz_qd:
-                    gram_mpz_qd = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[qd_t]]*>self._core.mpz_qd
-                    del gram_mpz_qd
+            if self._type == mat_gso_mpz_dd:
+                gram_mpz_dd = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[dd_t]]*>self._core.mpz_dd
+                del gram_mpz_dd
+            if self._type == mat_gso_mpz_qd:
+                gram_mpz_qd = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[qd_t]]*>self._core.mpz_qd
+                del gram_mpz_qd
             if self._type == mat_gso_mpz_mpfr:
                 gram_mpz_mpfr = <MatGSOGram_c[Z_NR[mpz_t], FP_NR[mpfr_t]]*>self._core.mpz_mpfr
                 del gram_mpz_mpfr
@@ -503,23 +437,15 @@ cdef class MatGSO:
                         for j in range(self.d):
                             G[i, j] = mpz_get_python(self._core.mpz_mpfr.get_g_matrix()[i][j].get_data())
                 else:
-                    IF HAVE_QD:
-                        if self._type == mat_gso_mpz_dd:
-                            for i in range(self.d):
-                                for j in range(self.d):
-                                    G[i, j] = mpz_get_python(self._core.mpz_dd.get_g_matrix()[i][j].get_data())
-                        elif self._type == mat_gso_mpz_qd:
-                            for i in range(self.d):
-                                for j in range(self.d):
-                                    G[i, j] = mpz_get_python(self._core.mpz_qd.get_g_matrix()[i][j].get_data())
-                        else:
-                            raise RuntimeError("MatGSO object '%s' has no core."%self)
-                    ELIF HAVE_LONG_DOUBLE:
-                        if self._type == mat_gso_mpz_ld:
-                            for i in range(self.d):
-                                for j in range(self.d):
-                                    G[i, j] = mpz_get_python(self._core.mpz_ld.get_g_matrix()[i][j].get_data())
-                    ELSE:
+                    if self._type == mat_gso_mpz_dd:
+                        for i in range(self.d):
+                            for j in range(self.d):
+                                G[i, j] = mpz_get_python(self._core.mpz_dd.get_g_matrix()[i][j].get_data())
+                    elif self._type == mat_gso_mpz_qd:
+                        for i in range(self.d):
+                            for j in range(self.d):
+                                G[i, j] = mpz_get_python(self._core.mpz_qd.get_g_matrix()[i][j].get_data())
+                    else:
                         raise RuntimeError("MatGSO object '%s' has no core."%self)
                 return G
             elif self.int_type == "long":
@@ -537,23 +463,15 @@ cdef class MatGSO:
                         for j in range(self.d):
                             G[i, j] = self._core.long_mpfr.get_g_matrix()[i][j].get_data()
                 else:
-                    IF HAVE_QD:
-                        if self._type == mat_gso_long_dd:
-                            for i in range(self.d):
-                                for j in range(self.d):
-                                    G[i, j] = self._core.long_dd.get_g_matrix()[i][j].get_data()
-                        elif self._type == mat_gso_long_qd:
-                            for i in range(self.d):
-                                for j in range(self.d):
-                                    G[i, j] = self._core.long_qd.get_g_matrix()[i][j].get_data()
-                        else:
-                            raise RuntimeError("MatGSO object '%s' has no core."%self)
-                    ELIF HAVE_LONG_DOUBLE:
-                        if self._type == mat_gso_long_ld:
-                            for i in range(self.d):
-                                for j in range(self.d):
-                                    G[i, j] = self._core.long_ld.get_g_matrix()[i][j].get_data()
-                    ELSE:
+                    if self._type == mat_gso_long_dd:
+                        for i in range(self.d):
+                            for j in range(self.d):
+                                G[i, j] = self._core.long_dd.get_g_matrix()[i][j].get_data()
+                    elif self._type == mat_gso_long_qd:
+                        for i in range(self.d):
+                            for j in range(self.d):
+                                G[i, j] = self._core.long_qd.get_g_matrix()[i][j].get_data()
+                    else:
                         raise RuntimeError("MatGSO object '%s' has no core."%self)
                 return G
 
@@ -576,16 +494,12 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d or self._type == mat_gso_long_d:
             return "double"
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld or self._type == mat_gso_long_ld:
-                return "long double"
         if self._type == mat_gso_mpz_dpe or self._type == mat_gso_long_dpe:
             return "dpe"
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd or self._type == mat_gso_long_dd:
-                return "dd"
-            if self._type == mat_gso_mpz_qd or self._type == mat_gso_long_qd:
-                return "qd"
+        if self._type == mat_gso_mpz_dd or self._type == mat_gso_long_dd:
+            return "dd"
+        if self._type == mat_gso_mpz_qd or self._type == mat_gso_long_qd:
+            return "qd"
         if self._type == mat_gso_mpz_mpfr or self._type == mat_gso_long_mpfr:
             return "mpfr"
 
@@ -600,16 +514,10 @@ cdef class MatGSO:
             return "mpz"
         elif self._type in (mat_gso_long_d, mat_gso_long_dpe, mat_gso_long_mpfr):
             return "long"
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return "mpz"
-            elif self._type == mat_gso_long_ld:
-                return "long"
-        IF HAVE_QD:
-            if self._type in (mat_gso_mpz_dd, mat_gso_mpz_qd):
-                return "mpz"
-            elif self._type in (mat_gso_long_dd, mat_gso_long_qd):
-                return "long"
+        if self._type in (mat_gso_mpz_dd, mat_gso_mpz_qd):
+            return "mpz"
+        elif self._type in (mat_gso_long_dd, mat_gso_long_qd):
+            return "long"
 
         raise RuntimeError("MatGSO object '%s' has no core."%self)
 
@@ -627,31 +535,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.d
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.d
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.d
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.d
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.d
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.d
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.d
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.d
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.d
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.d
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.d
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.d
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.d
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.d
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.d
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.d
 
@@ -675,31 +575,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return bool(self._core.mpz_d.enable_int_gram)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return bool(self._core.mpz_ld.enable_int_gram)
         if self._type == mat_gso_mpz_dpe:
             return bool(self._core.mpz_dpe.enable_int_gram)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return bool(self._core.mpz_dd.enable_int_gram)
-            if self._type == mat_gso_mpz_qd:
-                return bool(self._core.mpz_qd.enable_int_gram)
+        if self._type == mat_gso_mpz_dd:
+            return bool(self._core.mpz_dd.enable_int_gram)
+        if self._type == mat_gso_mpz_qd:
+            return bool(self._core.mpz_qd.enable_int_gram)
         if self._type == mat_gso_mpz_mpfr:
             return bool(self._core.mpz_mpfr.enable_int_gram)
 
         if self._type == mat_gso_long_d:
             return bool(self._core.long_d.enable_int_gram)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return bool(self._core.long_ld.enable_int_gram)
         if self._type == mat_gso_long_dpe:
             return bool(self._core.long_dpe.enable_int_gram)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return bool(self._core.long_dd.enable_int_gram)
-            if self._type == mat_gso_long_qd:
-                return bool(self._core.long_qd.enable_int_gram)
+        if self._type == mat_gso_long_dd:
+            return bool(self._core.long_dd.enable_int_gram)
+        if self._type == mat_gso_long_qd:
+            return bool(self._core.long_qd.enable_int_gram)
         if self._type == mat_gso_long_mpfr:
             return bool(self._core.long_mpfr.enable_int_gram)
 
@@ -723,31 +615,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return bool(self._core.mpz_d.enable_row_expo)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return bool(self._core.mpz_ld.enable_row_expo)
         if self._type == mat_gso_mpz_dpe:
             return bool(self._core.mpz_dpe.enable_row_expo)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return bool(self._core.mpz_dd.enable_row_expo)
-            if self._type == mat_gso_mpz_qd:
-                return bool(self._core.mpz_qd.enable_row_expo)
+        if self._type == mat_gso_mpz_dd:
+            return bool(self._core.mpz_dd.enable_row_expo)
+        if self._type == mat_gso_mpz_qd:
+            return bool(self._core.mpz_qd.enable_row_expo)
         if self._type == mat_gso_mpz_mpfr:
             return bool(self._core.mpz_mpfr.enable_row_expo)
 
         if self._type == mat_gso_long_d:
             return bool(self._core.long_d.enable_row_expo)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return bool(self._core.long_ld.enable_row_expo)
         if self._type == mat_gso_long_dpe:
             return bool(self._core.long_dpe.enable_row_expo)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return bool(self._core.long_dd.enable_row_expo)
-            if self._type == mat_gso_long_qd:
-                return bool(self._core.long_qd.enable_row_expo)
+        if self._type == mat_gso_long_dd:
+            return bool(self._core.long_dd.enable_row_expo)
+        if self._type == mat_gso_long_qd:
+            return bool(self._core.long_qd.enable_row_expo)
         if self._type == mat_gso_long_mpfr:
             return bool(self._core.long_mpfr.enable_row_expo)
 
@@ -773,31 +657,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return bool(self._core.mpz_d.enable_transform)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return bool(self._core.mpz_ld.enable_transform)
         if self._type == mat_gso_mpz_dpe:
             return bool(self._core.mpz_dpe.enable_transform)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return bool(self._core.mpz_dd.enable_transform)
-            if self._type == mat_gso_mpz_qd:
-                return bool(self._core.mpz_qd.enable_transform)
+        if self._type == mat_gso_mpz_dd:
+            return bool(self._core.mpz_dd.enable_transform)
+        if self._type == mat_gso_mpz_qd:
+            return bool(self._core.mpz_qd.enable_transform)
         if self._type == mat_gso_mpz_mpfr:
             return bool(self._core.mpz_mpfr.enable_transform)
 
         if self._type == mat_gso_long_d:
             return bool(self._core.long_d.enable_transform)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return bool(self._core.long_ld.enable_transform)
         if self._type == mat_gso_long_dpe:
             return bool(self._core.long_dpe.enable_transform)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return bool(self._core.long_dd.enable_transform)
-            if self._type == mat_gso_long_qd:
-                return bool(self._core.long_qd.enable_transform)
+        if self._type == mat_gso_long_dd:
+            return bool(self._core.long_dd.enable_transform)
+        if self._type == mat_gso_long_qd:
+            return bool(self._core.long_qd.enable_transform)
         if self._type == mat_gso_long_mpfr:
             return bool(self._core.long_mpfr.enable_transform)
 
@@ -823,31 +699,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return bool(self._core.mpz_d.enable_inverse_transform)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return bool(self._core.mpz_ld.enable_inverse_transform)
         if self._type == mat_gso_mpz_dpe:
             return bool(self._core.mpz_dpe.enable_inverse_transform)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return bool(self._core.mpz_dd.enable_inverse_transform)
-            if self._type == mat_gso_mpz_qd:
-                return bool(self._core.mpz_qd.enable_inverse_transform)
+        if self._type == mat_gso_mpz_dd:
+            return bool(self._core.mpz_dd.enable_inverse_transform)
+        if self._type == mat_gso_mpz_qd:
+            return bool(self._core.mpz_qd.enable_inverse_transform)
         if self._type == mat_gso_mpz_mpfr:
             return bool(self._core.mpz_mpfr.enable_inverse_transform)
 
         if self._type == mat_gso_long_d:
             return bool(self._core.long_d.enable_inverse_transform)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return bool(self._core.long_ld.enable_inverse_transform)
         if self._type == mat_gso_long_dpe:
             return bool(self._core.long_dpe.enable_inverse_transform)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return bool(self._core.long_dd.enable_inverse_transform)
-            if self._type == mat_gso_long_qd:
-                return bool(self._core.long_qd.enable_inverse_transform)
+        if self._type == mat_gso_long_dd:
+            return bool(self._core.long_dd.enable_inverse_transform)
+        if self._type == mat_gso_long_qd:
+            return bool(self._core.long_qd.enable_inverse_transform)
         if self._type == mat_gso_long_mpfr:
             return bool(self._core.long_mpfr.enable_inverse_transform)
 
@@ -871,31 +739,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return bool(self._core.mpz_d.row_op_force_long)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return bool(self._core.mpz_ld.row_op_force_long)
         if self._type == mat_gso_mpz_dpe:
             return bool(self._core.mpz_dpe.row_op_force_long)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return bool(self._core.mpz_dd.row_op_force_long)
-            if self._type == mat_gso_mpz_qd:
-                return bool(self._core.mpz_qd.row_op_force_long)
+        if self._type == mat_gso_mpz_dd:
+            return bool(self._core.mpz_dd.row_op_force_long)
+        if self._type == mat_gso_mpz_qd:
+            return bool(self._core.mpz_qd.row_op_force_long)
         if self._type == mat_gso_mpz_mpfr:
             return bool(self._core.mpz_mpfr.row_op_force_long)
 
         if self._type == mat_gso_long_d:
             return bool(self._core.long_d.row_op_force_long)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return bool(self._core.long_ld.row_op_force_long)
         if self._type == mat_gso_long_dpe:
             return bool(self._core.long_dpe.row_op_force_long)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return bool(self._core.long_dd.row_op_force_long)
-            if self._type == mat_gso_long_qd:
-                return bool(self._core.long_qd.row_op_force_long)
+        if self._type == mat_gso_long_dd:
+            return bool(self._core.long_dd.row_op_force_long)
+        if self._type == mat_gso_long_qd:
+            return bool(self._core.long_qd.row_op_force_long)
         if self._type == mat_gso_long_mpfr:
             return bool(self._core.long_mpfr.row_op_force_long)
 
@@ -912,31 +772,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.row_op_begin(first, last)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.row_op_begin(first, last)
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.row_op_begin(first, last)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.row_op_begin(first, last)
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.row_op_begin(first, last)
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.row_op_begin(first, last)
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.row_op_begin(first, last)
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.row_op_begin(first, last)
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.row_op_begin(first, last)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.row_op_begin(first, last)
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.row_op_begin(first, last)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.row_op_begin(first, last)
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.row_op_begin(first, last)
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.row_op_begin(first, last)
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.row_op_begin(first, last)
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.row_op_begin(first, last)
 
@@ -954,31 +806,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.row_op_end(first, last)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.row_op_end(first, last)
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.row_op_end(first, last)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.row_op_end(first, last)
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.row_op_end(first, last)
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.row_op_end(first, last)
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.row_op_end(first, last)
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.row_op_end(first, last)
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.row_op_end(first, last)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.row_op_end(first, last)
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.row_op_end(first, last)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.row_op_end(first, last)
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.row_op_end(first, last)
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.row_op_end(first, last)
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.row_op_end(first, last)
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.row_op_end(first, last)
 
@@ -1011,31 +855,23 @@ cdef class MatGSO:
         # TODO: don't just return doubles
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.get_gram(t.d, i, j).get_d()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.get_gram(t.ld, i, j).get_d()
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.get_gram(t.dpe, i, j).get_d()
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.get_gram(t.dd, i, j).get_d()
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.get_gram(t.qd, i, j).get_d()
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.get_gram(t.dd, i, j).get_d()
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.get_gram(t.qd, i, j).get_d()
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.get_gram(t.mpfr, i, j).get_d()
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.get_gram(t.d, i, j).get_d()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.get_gram(t.ld, i, j).get_d()
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.get_gram(t.dpe, i, j).get_d()
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.get_gram(t.dd, i, j).get_d()
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.get_gram(t.qd, i, j).get_d()
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.get_gram(t.dd, i, j).get_d()
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.get_gram(t.qd, i, j).get_d()
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.get_gram(t.mpfr, i, j).get_d()
 
@@ -1057,36 +893,27 @@ cdef class MatGSO:
         if self._type == mat_gso_mpz_d:
             self._core.mpz_d.get_int_gram(t.mpz, i, j)
             return mpz_get_python(t.mpz.get_data())
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                self._core.mpz_ld.get_int_gram(t.mpz, i, j)
-                return mpz_get_python(t.mpz.get_data())
         if self._type == mat_gso_mpz_dpe:
             self._core.mpz_dpe.get_int_gram(t.mpz, i, j)
             return mpz_get_python(t.mpz.get_data())
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                self._core.mpz_dd.get_int_gram(t.mpz, i, j)
-                return mpz_get_python(t.mpz.get_data())
-            if self._type == mat_gso_mpz_qd:
-                self._core.mpz_qd.get_int_gram(t.mpz, i, j)
-                return mpz_get_python(t.mpz.get_data())
+        if self._type == mat_gso_mpz_dd:
+            self._core.mpz_dd.get_int_gram(t.mpz, i, j)
+            return mpz_get_python(t.mpz.get_data())
+        if self._type == mat_gso_mpz_qd:
+            self._core.mpz_qd.get_int_gram(t.mpz, i, j)
+            return mpz_get_python(t.mpz.get_data())
         if self._type == mat_gso_mpz_mpfr:
             self._core.mpz_mpfr.get_int_gram(t.mpz, i, j)
             return mpz_get_python(t.mpz.get_data())
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.get_int_gram(t.long, i, j).get_data()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.get_int_gram(t.long, i, j).get_data()
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.get_int_gram(t.long, i, j).get_data()
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.get_int_gram(t.long, i, j).get_data()
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.get_int_gram(t.long, i, j).get_data()
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.get_int_gram(t.long, i, j).get_data()
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.get_int_gram(t.long, i, j).get_data()
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.get_int_gram(t.long, i, j).get_data()
 
@@ -1115,31 +942,23 @@ cdef class MatGSO:
         # TODO: don't just return doubles
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.get_r(t.d, i, j).get_d()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.get_r(t.ld, i, j).get_d()
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.get_r(t.dpe, i, j).get_d()
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.get_r(t.dd, i, j).get_d()
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.get_r(t.qd, i, j).get_d()
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.get_r(t.dd, i, j).get_d()
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.get_r(t.qd, i, j).get_d()
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.get_r(t.mpfr, i, j).get_d()
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.get_r(t.d, i, j).get_d()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.get_r(t.ld, i, j).get_d()
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.get_r(t.dpe, i, j).get_d()
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.get_r(t.dd, i, j).get_d()
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.get_r(t.qd, i, j).get_d()
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.get_r(t.dd, i, j).get_d()
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.get_r(t.qd, i, j).get_d()
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.get_r(t.mpfr, i, j).get_d()
 
@@ -1165,20 +984,15 @@ cdef class MatGSO:
         if self._type == mat_gso_mpz_d:
             r = self._core.mpz_d.get_r_exp(i, j, expo).get_data()
             return r, expo
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                r = self._core.mpz_ld.get_r_exp(i, j, expo).get_d()
-                return r, expo
         if self._type == mat_gso_mpz_dpe:
             r = self._core.mpz_dpe.get_r_exp(i, j, expo).get_d()
             return r, expo
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                r = self._core.mpz_dd.get_r_exp(i, j, expo).get_d()
-                return r, expo
-            if self._type == mat_gso_mpz_qd:
-                r = self._core.mpz_qd.get_r_exp(i, j, expo).get_d()
-                return r, expo
+        if self._type == mat_gso_mpz_dd:
+            r = self._core.mpz_dd.get_r_exp(i, j, expo).get_d()
+            return r, expo
+        if self._type == mat_gso_mpz_qd:
+            r = self._core.mpz_qd.get_r_exp(i, j, expo).get_d()
+            return r, expo
         if self._type == mat_gso_mpz_mpfr:
             r = self._core.mpz_mpfr.get_r_exp(i, j, expo).get_d()
             return r, expo
@@ -1186,20 +1000,15 @@ cdef class MatGSO:
         if self._type == mat_gso_long_d:
             r = self._core.long_d.get_r_exp(i, j, expo).get_data()
             return r, expo
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                r = self._core.long_ld.get_r_exp(i, j, expo).get_d()
-                return r, expo
         if self._type == mat_gso_long_dpe:
             r = self._core.long_dpe.get_r_exp(i, j, expo).get_d()
             return r, expo
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                r = self._core.long_dd.get_r_exp(i, j, expo).get_d()
-                return r, expo
-            if self._type == mat_gso_long_qd:
-                r = self._core.long_qd.get_r_exp(i, j, expo).get_d()
-                return r, expo
+        if self._type == mat_gso_long_dd:
+            r = self._core.long_dd.get_r_exp(i, j, expo).get_d()
+            return r, expo
+        if self._type == mat_gso_long_qd:
+            r = self._core.long_qd.get_r_exp(i, j, expo).get_d()
+            return r, expo
         if self._type == mat_gso_long_mpfr:
             r = self._core.long_mpfr.get_r_exp(i, j, expo).get_d()
             return r, expo
@@ -1221,31 +1030,23 @@ cdef class MatGSO:
         # TODO: don't just return doubles
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.get_mu(t.d, i, j).get_d()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.get_mu(t.ld, i, j).get_d()
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.get_mu(t.dpe, i, j).get_d()
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.get_mu(t.dd, i, j).get_d()
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.get_mu(t.qd, i, j).get_d()
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.get_mu(t.dd, i, j).get_d()
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.get_mu(t.qd, i, j).get_d()
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.get_mu(t.mpfr, i, j).get_d()
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.get_mu(t.d, i, j).get_d()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.get_mu(t.ld, i, j).get_d()
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.get_mu(t.dpe, i, j).get_d()
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.get_mu(t.dd, i, j).get_d()
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.get_mu(t.qd, i, j).get_d()
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.get_mu(t.dd, i, j).get_d()
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.get_mu(t.qd, i, j).get_d()
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.get_mu(t.mpfr, i, j).get_d()
 
@@ -1271,20 +1072,15 @@ cdef class MatGSO:
         if self._type == mat_gso_mpz_d:
             r = self._core.mpz_d.get_mu_exp(i, j, expo).get_data()
             return r, expo
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                r = self._core.mpz_ld.get_mu_exp(i, j, expo).get_d()
-                return r, expo
         if self._type == mat_gso_mpz_dpe:
             r = self._core.mpz_dpe.get_mu_exp(i, j, expo).get_d()
             return r, expo
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                r = self._core.mpz_dd.get_mu_exp(i, j, expo).get_d()
-                return r, expo
-            if self._type == mat_gso_mpz_qd:
-                r = self._core.mpz_qd.get_mu_exp(i, j, expo).get_d()
-                return r, expo
+        if self._type == mat_gso_mpz_dd:
+            r = self._core.mpz_dd.get_mu_exp(i, j, expo).get_d()
+            return r, expo
+        if self._type == mat_gso_mpz_qd:
+            r = self._core.mpz_qd.get_mu_exp(i, j, expo).get_d()
+            return r, expo
         if self._type == mat_gso_mpz_mpfr:
             r = self._core.mpz_mpfr.get_mu_exp(i, j, expo).get_d()
             return r, expo
@@ -1292,20 +1088,15 @@ cdef class MatGSO:
         if self._type == mat_gso_long_d:
             r = self._core.long_d.get_mu_exp(i, j, expo).get_data()
             return r, expo
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                r = self._core.long_ld.get_mu_exp(i, j, expo).get_d()
-                return r, expo
         if self._type == mat_gso_long_dpe:
             r = self._core.long_dpe.get_mu_exp(i, j, expo).get_d()
             return r, expo
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                r = self._core.long_dd.get_mu_exp(i, j, expo).get_d()
-                return r, expo
-            if self._type == mat_gso_long_qd:
-                r = self._core.long_qd.get_mu_exp(i, j, expo).get_d()
-                return r, expo
+        if self._type == mat_gso_long_dd:
+            r = self._core.long_dd.get_mu_exp(i, j, expo).get_d()
+            return r, expo
+        if self._type == mat_gso_long_qd:
+            r = self._core.long_qd.get_mu_exp(i, j, expo).get_d()
+            return r, expo
         if self._type == mat_gso_long_mpfr:
             r = self._core.long_mpfr.get_mu_exp(i, j, expo).get_d()
             return r, expo
@@ -1322,24 +1113,18 @@ cdef class MatGSO:
             with nogil:
                 r = self._core.mpz_d.update_gso()
             return bool(r)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                with nogil:
-                    r = self._core.mpz_ld.update_gso()
-                return bool(r)
         if self._type == mat_gso_mpz_dpe:
             with nogil:
                 r = self._core.mpz_dpe.update_gso()
             return bool(r)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                with nogil:
-                    r = self._core.mpz_dd.update_gso()
-                return bool(r)
-            if self._type == mat_gso_mpz_qd:
-                with nogil:
-                    r = self._core.mpz_qd.update_gso()
-                return bool(r)
+        if self._type == mat_gso_mpz_dd:
+            with nogil:
+                r = self._core.mpz_dd.update_gso()
+            return bool(r)
+        if self._type == mat_gso_mpz_qd:
+            with nogil:
+                r = self._core.mpz_qd.update_gso()
+            return bool(r)
         if self._type == mat_gso_mpz_mpfr:
             with nogil:
                 r = self._core.mpz_mpfr.update_gso()
@@ -1349,24 +1134,18 @@ cdef class MatGSO:
             with nogil:
                 r = self._core.long_d.update_gso()
             return bool(r)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                with nogil:
-                    r = self._core.long_ld.update_gso()
-                return bool(r)
         if self._type == mat_gso_long_dpe:
             with nogil:
                 r = self._core.long_dpe.update_gso()
             return bool(r)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                with nogil:
-                    r = self._core.long_dd.update_gso()
-                return bool(r)
-            if self._type == mat_gso_long_qd:
-                with nogil:
-                    r = self._core.long_qd.update_gso()
-                return bool(r)
+        if self._type == mat_gso_long_dd:
+            with nogil:
+                r = self._core.long_dd.update_gso()
+            return bool(r)
+        if self._type == mat_gso_long_qd:
+            with nogil:
+                r = self._core.long_qd.update_gso()
+            return bool(r)
         if self._type == mat_gso_long_mpfr:
             with nogil:
                 r = self._core.long_mpfr.update_gso()
@@ -1385,31 +1164,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return bool(self._core.mpz_d.update_gso_row(i, last_j))
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return bool(self._core.mpz_ld.update_gso_row(i, last_j))
         if self._type == mat_gso_mpz_dpe:
             return bool(self._core.mpz_dpe.update_gso_row(i, last_j))
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return bool(self._core.mpz_dd.update_gso_row(i, last_j))
-            if self._type == mat_gso_mpz_qd:
-                return bool(self._core.mpz_qd.update_gso_row(i, last_j))
+        if self._type == mat_gso_mpz_dd:
+            return bool(self._core.mpz_dd.update_gso_row(i, last_j))
+        if self._type == mat_gso_mpz_qd:
+            return bool(self._core.mpz_qd.update_gso_row(i, last_j))
         if self._type == mat_gso_mpz_mpfr:
             return bool(self._core.mpz_mpfr.update_gso_row(i, last_j))
 
         if self._type == mat_gso_long_d:
             return bool(self._core.long_d.update_gso_row(i, last_j))
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return bool(self._core.long_ld.update_gso_row(i, last_j))
         if self._type == mat_gso_long_dpe:
             return bool(self._core.long_dpe.update_gso_row(i, last_j))
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return bool(self._core.long_dd.update_gso_row(i, last_j))
-            if self._type == mat_gso_long_qd:
-                return bool(self._core.long_qd.update_gso_row(i, last_j))
+        if self._type == mat_gso_long_dd:
+            return bool(self._core.long_dd.update_gso_row(i, last_j))
+        if self._type == mat_gso_long_qd:
+            return bool(self._core.long_qd.update_gso_row(i, last_j))
         if self._type == mat_gso_long_mpfr:
             return bool(self._core.long_mpfr.update_gso_row(i, last_j))
 
@@ -1422,31 +1193,23 @@ cdef class MatGSO:
         """
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.discover_all_rows()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.discover_all_rows()
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.discover_all_rows()
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.discover_all_rows()
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.discover_all_rows()
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.discover_all_rows()
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.discover_all_rows()
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.discover_all_rows()
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.discover_all_rows()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.discover_all_rows()
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.discover_all_rows()
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.discover_all_rows()
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.discover_all_rows()
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.discover_all_rows()
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.discover_all_rows()
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.discover_all_rows()
 
@@ -1464,31 +1227,23 @@ cdef class MatGSO:
         preprocess_indices(old_r, new_r, self.d, self.d)
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.move_row(old_r, new_r)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.move_row(old_r, new_r)
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.move_row(old_r, new_r)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.move_row(old_r, new_r)
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.move_row(old_r, new_r)
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.move_row(old_r, new_r)
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.move_row(old_r, new_r)
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.move_row(old_r, new_r)
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.move_row(old_r, new_r)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.move_row(old_r, new_r)
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.move_row(old_r, new_r)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.move_row(old_r, new_r)
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.move_row(old_r, new_r)
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.move_row(old_r, new_r)
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.move_row(old_r, new_r)
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.move_row(old_r, new_r)
 
@@ -1505,31 +1260,23 @@ cdef class MatGSO:
         preprocess_indices(i, j, self.d, self.d)
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.row_swap(i, j)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.row_swap(i, j)
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.row_swap(i, j)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.row_swap(i, j)
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.row_swap(i, j)
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.row_swap(i, j)
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.row_swap(i, j)
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.row_swap(i, j)
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.row_swap(i, j)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.row_swap(i, j)
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.row_swap(i, j)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.row_swap(i, j)
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.row_swap(i, j)
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.row_swap(i, j)
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.row_swap(i, j)
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.row_swap(i, j)
 
@@ -1592,20 +1339,16 @@ cdef class MatGSO:
         if self._type == mat_gso_mpz_d:
             x_.d = float(x)
             return self._core.mpz_d.row_addmul(i, j, x_.d)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                x_.ld = float(x)
-                return self._core.mpz_ld.row_addmul(i, j, x_.ld)
+
         if self._type == mat_gso_mpz_dpe:
             x_.dpe = float(x)
             return self._core.mpz_dpe.row_addmul(i, j, x_.dpe)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                x_.dd = float(x)
-                return self._core.mpz_dd.row_addmul(i, j, x_.dd)
-            if self._type == mat_gso_mpz_qd:
-                x_.qd = float(x)
-                return self._core.mpz_qd.row_addmul(i, j, x_.qd)
+        if self._type == mat_gso_mpz_dd:
+            x_.dd = float(x)
+            return self._core.mpz_dd.row_addmul(i, j, x_.dd)
+        if self._type == mat_gso_mpz_qd:
+            x_.qd = float(x)
+            return self._core.mpz_qd.row_addmul(i, j, x_.qd)
         if self._type == mat_gso_mpz_mpfr:
             x_.mpfr = float(x)
             return self._core.mpz_mpfr.row_addmul(i, j, x_.mpfr)
@@ -1613,20 +1356,16 @@ cdef class MatGSO:
         if self._type == mat_gso_long_d:
             x_.d = float(x)
             return self._core.long_d.row_addmul(i, j, x_.d)
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                x_.ld = float(x)
-                return self._core.long_ld.row_addmul(i, j, x_.ld)
+
         if self._type == mat_gso_long_dpe:
             x_.dpe = float(x)
             return self._core.long_dpe.row_addmul(i, j, x_.dpe)
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                x_.dd = float(x)
-                return self._core.long_dd.row_addmul(i, j, x_.dd)
-            if self._type == mat_gso_long_qd:
-                x_.qd = float(x)
-                return self._core.long_qd.row_addmul(i, j, x_.qd)
+        if self._type == mat_gso_long_dd:
+            x_.dd = float(x)
+            return self._core.long_dd.row_addmul(i, j, x_.dd)
+        if self._type == mat_gso_long_qd:
+            x_.qd = float(x)
+            return self._core.long_qd.row_addmul(i, j, x_.qd)
         if self._type == mat_gso_long_mpfr:
             x_.mpfr = float(x)
             return self._core.long_mpfr.row_addmul(i, j, x_.mpfr)
@@ -1644,31 +1383,25 @@ cdef class MatGSO:
 
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.create_row()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.create_row()
+
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.create_row()
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.create_row()
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.create_row()
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.create_row()
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.create_row()
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.create_row()
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.create_row()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.create_row()
+
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.create_row()
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.create_row()
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.create_row()
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.create_row()
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.create_row()
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.create_row()
 
@@ -1684,31 +1417,23 @@ cdef class MatGSO:
 
         if self._type == mat_gso_mpz_d:
             return self._core.mpz_d.remove_last_row()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                return self._core.mpz_ld.remove_last_row()
         if self._type == mat_gso_mpz_dpe:
             return self._core.mpz_dpe.remove_last_row()
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                return self._core.mpz_dd.remove_last_row()
-            if self._type == mat_gso_mpz_qd:
-                return self._core.mpz_qd.remove_last_row()
+        if self._type == mat_gso_mpz_dd:
+            return self._core.mpz_dd.remove_last_row()
+        if self._type == mat_gso_mpz_qd:
+            return self._core.mpz_qd.remove_last_row()
         if self._type == mat_gso_mpz_mpfr:
             return self._core.mpz_mpfr.remove_last_row()
 
         if self._type == mat_gso_long_d:
             return self._core.long_d.remove_last_row()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                return self._core.long_ld.remove_last_row()
         if self._type == mat_gso_long_dpe:
             return self._core.long_dpe.remove_last_row()
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                return self._core.long_dd.remove_last_row()
-            if self._type == mat_gso_long_qd:
-                return self._core.long_qd.remove_last_row()
+        if self._type == mat_gso_long_dd:
+            return self._core.long_dd.remove_last_row()
+        if self._type == mat_gso_long_qd:
+            return self._core.long_qd.remove_last_row()
         if self._type == mat_gso_long_mpfr:
             return self._core.long_mpfr.remove_last_row()
 
@@ -1732,28 +1457,21 @@ cdef class MatGSO:
             r = self._core.mpz_d.get_current_slope(start_row, stop_row)
             sig_off()
             return r
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_mpz_ld:
-                sig_on()
-                r = self._core.mpz_ld.get_current_slope(start_row, stop_row)
-                sig_off()
-                return r
         if self._type == mat_gso_mpz_dpe:
             sig_on()
             r = self._core.mpz_dpe.get_current_slope(start_row, stop_row)
             sig_off()
             return r
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                sig_on()
-                r = self._core.mpz_dd.get_current_slope(start_row, stop_row)
-                sig_off()
-                return r
-            if self._type == mat_gso_mpz_qd:
-                sig_on()
-                r = self._core.mpz_qd.get_current_slope(start_row, stop_row)
-                sig_off()
-                return r
+        if self._type == mat_gso_mpz_dd:
+            sig_on()
+            r = self._core.mpz_dd.get_current_slope(start_row, stop_row)
+            sig_off()
+            return r
+        if self._type == mat_gso_mpz_qd:
+            sig_on()
+            r = self._core.mpz_qd.get_current_slope(start_row, stop_row)
+            sig_off()
+            return r
         if self._type == mat_gso_mpz_mpfr:
             sig_on()
             r = self._core.mpz_mpfr.get_current_slope(start_row, stop_row)
@@ -1765,28 +1483,21 @@ cdef class MatGSO:
             r = self._core.long_d.get_current_slope(start_row, stop_row)
             sig_off()
             return r
-        IF HAVE_LONG_DOUBLE:
-            if self._type == mat_gso_long_ld:
-                sig_on()
-                r = self._core.long_ld.get_current_slope(start_row, stop_row)
-                sig_off()
-                return r
         if self._type == mat_gso_long_dpe:
             sig_on()
             r = self._core.long_dpe.get_current_slope(start_row, stop_row)
             sig_off()
             return r
-        IF HAVE_QD:
-            if self._type == mat_gso_long_dd:
-                sig_on()
-                r = self._core.long_dd.get_current_slope(start_row, stop_row)
-                sig_off()
-                return r
-            if self._type == mat_gso_long_qd:
-                sig_on()
-                r = self._core.long_qd.get_current_slope(start_row, stop_row)
-                sig_off()
-                return r
+        if self._type == mat_gso_long_dd:
+            sig_on()
+            r = self._core.long_dd.get_current_slope(start_row, stop_row)
+            sig_off()
+            return r
+        if self._type == mat_gso_long_qd:
+            sig_on()
+            r = self._core.long_qd.get_current_slope(start_row, stop_row)
+            sig_off()
+            return r
         if self._type == mat_gso_long_mpfr:
             sig_on()
             r = self._core.long_mpfr.get_current_slope(start_row, stop_row)
@@ -1820,23 +1531,16 @@ cdef class MatGSO:
             sig_off()
             return r
         else:
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_mpz_ld:
-                    sig_on()
-                    r = self._core.mpz_ld.get_root_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-            IF HAVE_QD:
-                if self._type == mat_gso_mpz_dd:
-                    sig_on()
-                    r = self._core.mpz_dd.get_root_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-                elif self._type == mat_gso_mpz_qd:
-                    sig_on()
-                    r = self._core.mpz_qd.get_root_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
+            if self._type == mat_gso_mpz_dd:
+                sig_on()
+                r = self._core.mpz_dd.get_root_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
+            elif self._type == mat_gso_mpz_qd:
+                sig_on()
+                r = self._core.mpz_qd.get_root_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
 
         if self._type == mat_gso_long_d:
             sig_on()
@@ -1854,23 +1558,16 @@ cdef class MatGSO:
             sig_off()
             return r
         else:
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_long_ld:
-                    sig_on()
-                    r = self._core.long_ld.get_root_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-            IF HAVE_QD:
-                if self._type == mat_gso_long_dd:
-                    sig_on()
-                    r = self._core.long_dd.get_root_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-                elif self._type == mat_gso_long_qd:
-                    sig_on()
-                    r = self._core.long_qd.get_root_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
+            if self._type == mat_gso_long_dd:
+                sig_on()
+                r = self._core.long_dd.get_root_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
+            elif self._type == mat_gso_long_qd:
+                sig_on()
+                r = self._core.long_qd.get_root_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
 
         raise RuntimeError("MatGSO object '%s' has no core."%self)
 
@@ -1899,23 +1596,16 @@ cdef class MatGSO:
             sig_off()
             return r
         else:
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_mpz_ld:
-                    sig_on()
-                    r = self._core.mpz_ld.get_log_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-            IF HAVE_QD:
-                if self._type == mat_gso_mpz_dd:
-                    sig_on()
-                    r = self._core.mpz_dd.get_log_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-                elif self._type == mat_gso_mpz_qd:
-                    sig_on()
-                    r = self._core.mpz_qd.get_log_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
+            if self._type == mat_gso_mpz_dd:
+                sig_on()
+                r = self._core.mpz_dd.get_log_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
+            elif self._type == mat_gso_mpz_qd:
+                sig_on()
+                r = self._core.mpz_qd.get_log_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
 
         if self._type == mat_gso_long_d:
             sig_on()
@@ -1933,23 +1623,16 @@ cdef class MatGSO:
             sig_off()
             return r
         else:
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_long_ld:
-                    sig_on()
-                    r = self._core.long_ld.get_log_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-            IF HAVE_QD:
-                if self._type == mat_gso_long_dd:
-                    sig_on()
-                    r = self._core.long_dd.get_log_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
-                elif self._type == mat_gso_long_qd:
-                    sig_on()
-                    r = self._core.long_qd.get_log_det(start_row, stop_row).get_d()
-                    sig_off()
-                    return r
+            if self._type == mat_gso_long_dd:
+                sig_on()
+                r = self._core.long_dd.get_log_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
+            elif self._type == mat_gso_long_qd:
+                sig_on()
+                r = self._core.long_qd.get_log_det(start_row, stop_row).get_d()
+                sig_off()
+                return r
 
         raise RuntimeError("MatGSO object '%s' has no core."%self)
 
@@ -1979,23 +1662,16 @@ cdef class MatGSO:
             sig_off()
             return r
         else:
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_mpz_ld:
-                    sig_on()
-                    r = self._core.mpz_ld.get_slide_potential(start_row, stop_row, block_size).get_d()
-                    sig_off()
-                    return r
-            IF HAVE_QD:
-                if self._type == mat_gso_mpz_dd:
-                    sig_on()
-                    r = self._core.mpz_dd.get_slide_potential(start_row, stop_row, block_size).get_d()
-                    sig_off()
-                    return r
-                elif self._type == mat_gso_mpz_qd:
-                    sig_on()
-                    r = self._core.mpz_qd.get_slide_potential(start_row, stop_row, block_size).get_d()
-                    sig_off()
-                    return r
+            if self._type == mat_gso_mpz_dd:
+                sig_on()
+                r = self._core.mpz_dd.get_slide_potential(start_row, stop_row, block_size).get_d()
+                sig_off()
+                return r
+            elif self._type == mat_gso_mpz_qd:
+                sig_on()
+                r = self._core.mpz_qd.get_slide_potential(start_row, stop_row, block_size).get_d()
+                sig_off()
+                return r
 
         if self._type == mat_gso_long_d:
             sig_on()
@@ -2013,23 +1689,16 @@ cdef class MatGSO:
             sig_off()
             return r
         else:
-            IF HAVE_LONG_DOUBLE:
-                if self._type == mat_gso_long_ld:
-                    sig_on()
-                    r = self._core.long_ld.get_slide_potential(start_row, stop_row, block_size).get_d()
-                    sig_off()
-                    return r
-            IF HAVE_QD:
-                if self._type == mat_gso_long_dd:
-                    sig_on()
-                    r = self._core.long_dd.get_slide_potential(start_row, stop_row, block_size).get_d()
-                    sig_off()
-                    return r
-                elif self._type == mat_gso_long_qd:
-                    sig_on()
-                    r = self._core.long_qd.get_slide_potential(start_row, stop_row, block_size).get_d()
-                    sig_off()
-                    return r
+            if self._type == mat_gso_long_dd:
+                sig_on()
+                r = self._core.long_dd.get_slide_potential(start_row, stop_row, block_size).get_d()
+                sig_off()
+                return r
+            elif self._type == mat_gso_long_qd:
+                sig_on()
+                r = self._core.long_qd.get_slide_potential(start_row, stop_row, block_size).get_d()
+                sig_off()
+                return r
 
         raise RuntimeError("MatGSO object '%s' has no core."%self)
 
@@ -2073,14 +1742,7 @@ cdef class MatGSO:
             sig_off()
             return vector_fp_nr_slurp(cv, FT_DOUBLE)
         elif self._type == mat_gso_mpz_ld:
-            IF HAVE_LONG_DOUBLE:
-                vector_fp_nr_barf(cw, w, FT_LONG_DOUBLE)
-                sig_on()
-                (<MatGSO_c[Z_NR[mpz_t],FP_NR[ld_t]]*>self._core.mpz_ld).from_canonical(cv.ld, cw.ld, start, dimension)
-                sig_off()
-                return vector_fp_nr_slurp(cv, FT_LONG_DOUBLE)
-            ELSE:
-                raise RuntimeError("Float type long double not supported.")
+            raise RuntimeError("Float type long double not supported.")
         # elif self._type == mat_gso_mpz_dpe:
         #     vector_fp_nr_barf(cw, w, FT_DPE)
         #     sig_on()
@@ -2100,14 +1762,7 @@ cdef class MatGSO:
             sig_off()
             return vector_fp_nr_slurp(cv, FT_DOUBLE)
         elif self._type == mat_gso_long_ld:
-            IF HAVE_LONG_DOUBLE:
-                vector_fp_nr_barf(cw, w, FT_LONG_DOUBLE)
-                sig_on()
-                (<MatGSO_c[Z_NR[long],FP_NR[ld_t]]*>self._core.long_ld).from_canonical(cv.ld, cw.ld, start, dimension)
-                sig_off()
-                return vector_fp_nr_slurp(cv, FT_LONG_DOUBLE)
-            ELSE:
-                raise RuntimeError("Float type long double not supported.")
+            raise RuntimeError("Float type long double not supported.")
         # elif self._type == mat_gso_long_dpe:
         #     vector_fp_nr_barf(cw, w, FT_DPE)
         #     sig_on()
@@ -2120,25 +1775,24 @@ cdef class MatGSO:
         #     (<MatGSO_c[Z_NR[long],FP_NR[mpfr_t]]*>self._core.long_mpfr).from_canonical(cv.mpfr, cw.mpfr, start, dimension)
         #     sig_off()
         #     return vector_fp_nr_slurp(cv, FT_MPFR)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                vector_fp_nr_barf(cw, w, FT_DD)
-                sig_on()
-                (<MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]]*>self._core.mpz_dd).from_canonical(cv.dd, cw.dd, start, dimension)
-                sig_off()
-                return vector_fp_nr_slurp(cv, FT_DD)
-            elif self._type == mat_gso_mpz_qd:
-                vector_fp_nr_barf(cw, w, FT_QD)
-                sig_on()
-                (<MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]]*>self._core.mpz_qd).from_canonical(cv.qd, cw.qd, start, dimension)
-                sig_off()
-                return vector_fp_nr_slurp(cv, FT_QD)
-            elif self._type == mat_gso_long_dd:
-                vector_fp_nr_barf(cw, w, FT_DD)
-                sig_on()
-                (<MatGSO_c[Z_NR[long],FP_NR[dd_t]]*>self._core.long_dd).from_canonical(cv.dd, cw.dd, start, dimension)
-                sig_off()
-                return vector_fp_nr_slurp(cv, FT_DD)
+        if self._type == mat_gso_mpz_dd:
+            vector_fp_nr_barf(cw, w, FT_DD)
+            sig_on()
+            (<MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]]*>self._core.mpz_dd).from_canonical(cv.dd, cw.dd, start, dimension)
+            sig_off()
+            return vector_fp_nr_slurp(cv, FT_DD)
+        elif self._type == mat_gso_mpz_qd:
+            vector_fp_nr_barf(cw, w, FT_QD)
+            sig_on()
+            (<MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]]*>self._core.mpz_qd).from_canonical(cv.qd, cw.qd, start, dimension)
+            sig_off()
+            return vector_fp_nr_slurp(cv, FT_QD)
+        elif self._type == mat_gso_long_dd:
+            vector_fp_nr_barf(cw, w, FT_DD)
+            sig_on()
+            (<MatGSO_c[Z_NR[long],FP_NR[dd_t]]*>self._core.long_dd).from_canonical(cv.dd, cw.dd, start, dimension)
+            sig_off()
+            return vector_fp_nr_slurp(cv, FT_DD)
             # elif self._type == mat_gso_long_qd:
             #     vector_fp_nr_barf(cw, w, FT_QD)
             #     sig_on()
@@ -2197,14 +1851,7 @@ cdef class MatGSO:
             sig_off()
             return vector_fp_nr_slurp(cw, FT_DOUBLE)
         elif self._type == mat_gso_mpz_ld:
-            IF HAVE_LONG_DOUBLE:
-                vector_fp_nr_barf(cv, v, FT_LONG_DOUBLE)
-                sig_on()
-                (<MatGSO_c[Z_NR[mpz_t],FP_NR[ld_t]]*>self._core.mpz_ld).to_canonical(cw.ld, cv.ld, start)
-                sig_off()
-                return vector_fp_nr_slurp(cw, FT_LONG_DOUBLE)
-            ELSE:
-                raise RuntimeError("Float type long double not supported.")
+            raise RuntimeError("Float type long double not supported.")
         # # https://github.com/fplll/fplll/issues/493
         # elif self._type == mat_gso_mpz_dpe:
         #     vector_fp_nr_barf(cv, v, FT_DPE)
@@ -2225,14 +1872,7 @@ cdef class MatGSO:
             sig_off()
             return vector_fp_nr_slurp(cw, FT_DOUBLE)
         elif self._type == mat_gso_long_ld:
-            IF HAVE_LONG_DOUBLE:
-                vector_fp_nr_barf(cv, v, FT_LONG_DOUBLE)
-                sig_on()
-                (<MatGSO_c[Z_NR[long],FP_NR[ld_t]]*>self._core.long_ld).to_canonical(cw.ld, cv.ld, start)
-                sig_off()
-                return vector_fp_nr_slurp(cw, FT_LONG_DOUBLE)
-            ELSE:
-                raise RuntimeError("Float type long double not supported.")
+            raise RuntimeError("Float type long double not supported.")
         # # https://github.com/fplll/fplll/issues/493
         # elif self._type == mat_gso_long_dpe:
         #     vector_fp_nr_barf(cv, v, FT_DPE)
@@ -2246,33 +1886,33 @@ cdef class MatGSO:
         #     (<MatGSO_c[Z_NR[long],FP_NR[mpfr_t]]*>self._core.long_mpfr).to_canonical(cw.mpfr, cv.mpfr, start)
         #     sig_off()
         #     return vector_fp_nr_slurp(cw, FT_MPFR)
-        IF HAVE_QD:
-            if self._type == mat_gso_mpz_dd:
-                vector_fp_nr_barf(cv, v, FT_DD)
-                sig_on()
-                (<MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]]*>self._core.mpz_dd).to_canonical(cw.dd, cv.dd, start)
-                sig_off()
-                return vector_fp_nr_slurp(cw, FT_DD)
-            # # https://github.com/fplll/fplll/issues/493
-            # elif self._type == mat_gso_mpz_qd:
-            #     vector_fp_nr_barf(cv, v, FT_QD)
-            #     sig_on()
-            #     (<MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]]*>self._core.mpz_ld).to_canonical(cw.qd, cv.qd, start)
-            #     sig_off()
-            #     return vector_fp_nr_slurp(cw, FT_QD)
-            elif self._type == mat_gso_long_dd:
-                vector_fp_nr_barf(cv, v, FT_DD)
-                sig_on()
-                (<MatGSO_c[Z_NR[long],FP_NR[dd_t]]*>self._core.long_dd).to_canonical(cw.dd, cv.dd, start)
-                sig_off()
-                return vector_fp_nr_slurp(cw, FT_DD)
-            # # https://github.com/fplll/fplll/issues/493
-            # elif self._type == mat_gso_long_qd:
-            #     vector_fp_nr_barf(cv, v, FT_QD)
-            #     sig_on()
-            #     (<MatGSO_c[Z_NR[long],FP_NR[qd_t]]*>self._core.long_ld).to_canonical(cw.qd, cv.qd, start)
-            #     sig_off()
-            #     return vector_fp_nr_slurp(cw, FT_QD)
+
+        if self._type == mat_gso_mpz_dd:
+            vector_fp_nr_barf(cv, v, FT_DD)
+            sig_on()
+            (<MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]]*>self._core.mpz_dd).to_canonical(cw.dd, cv.dd, start)
+            sig_off()
+            return vector_fp_nr_slurp(cw, FT_DD)
+        # # https://github.com/fplll/fplll/issues/493
+        # elif self._type == mat_gso_mpz_qd:
+        #     vector_fp_nr_barf(cv, v, FT_QD)
+        #     sig_on()
+        #     (<MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]]*>self._core.mpz_ld).to_canonical(cw.qd, cv.qd, start)
+        #     sig_off()
+        #     return vector_fp_nr_slurp(cw, FT_QD)
+        elif self._type == mat_gso_long_dd:
+            vector_fp_nr_barf(cv, v, FT_DD)
+            sig_on()
+            (<MatGSO_c[Z_NR[long],FP_NR[dd_t]]*>self._core.long_dd).to_canonical(cw.dd, cv.dd, start)
+            sig_off()
+            return vector_fp_nr_slurp(cw, FT_DD)
+        # # https://github.com/fplll/fplll/issues/493
+        # elif self._type == mat_gso_long_qd:
+        #     vector_fp_nr_barf(cv, v, FT_QD)
+        #     sig_on()
+        #     (<MatGSO_c[Z_NR[long],FP_NR[qd_t]]*>self._core.long_ld).to_canonical(cw.qd, cv.qd, start)
+        #     sig_off()
+        #     return vector_fp_nr_slurp(cw, FT_QD)
 
         raise NotImplementedError
 
@@ -2379,14 +2019,7 @@ cdef class MatGSO:
                 sig_off()
                 return vector_z_nr_slurp(cw, ZT_MPZ)
             elif self._type == mat_gso_mpz_ld:
-                IF HAVE_LONG_DOUBLE:
-                    vector_fp_nr_barf(cv, v, FT_LONG_DOUBLE)
-                    sig_on()
-                    (<MatGSO_c[Z_NR[mpz_t],FP_NR[ld_t]]*>self._core.mpz_ld).babai(cw.mpz, cv.ld, start, dimension, gso)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_MPZ)
-                ELSE:
-                    raise RuntimeError("Float type long double not supported.")
+                raise RuntimeError("Float type long double not supported.")
             # # https://github.com/fplll/fplll/issues/493
             # elif self._type == mat_gso_mpz_dpe:
             #     vector_fp_nr_barf(cv, v, FT_DPE)
@@ -2407,14 +2040,7 @@ cdef class MatGSO:
                 sig_off()
                 return vector_z_nr_slurp(cw, ZT_LONG)
             elif self._type == mat_gso_long_ld:
-                IF HAVE_LONG_DOUBLE:
-                    vector_fp_nr_barf(cv, v, FT_LONG_DOUBLE)
-                    sig_on()
-                    (<MatGSO_c[Z_NR[long],FP_NR[ld_t]]*>self._core.long_ld).babai(cw.long, cv.ld, start, dimension, gso)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_LONG)
-                ELSE:
-                    raise RuntimeError("Float type long double not supported.")
+                raise RuntimeError("Float type long double not supported.")
             # # https://github.com/fplll/fplll/issues/493
             # elif self._type == mat_gso_long_dpe:
             #     vector_fp_nr_barf(cv, v, FT_DPE)
@@ -2428,33 +2054,32 @@ cdef class MatGSO:
             #     (<MatGSO_c[Z_NR[long],FP_NR[mpfr_t]]*>self._core.long_mpfr).babai(cw.long, cv.mpfr, start, dimension, gso)
             #     sig_off()
             #     return vector_z_nr_slurp(cw, ZT_LONG)
-            IF HAVE_QD:
-                if self._type == mat_gso_mpz_dd:
-                    vector_fp_nr_barf(cv, v, FT_DD)
-                    sig_on()
-                    (<MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]]*>self._core.mpz_dd).babai(cw.mpz, cv.dd, start, dimension, gso)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_MPZ)
-                # # https://github.com/fplll/fplll/issues/493
-                # elif self._type == mat_gso_mpz_qd:
-                #     vector_fp_nr_barf(cv, v, FT_QD)
-                #     sig_on()
-                #     (<MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]]*>self._core.mpz_qd).babai(cw.mpz, cv.qd, start, dimension, gso)
-                #     sig_off()
-                #     return vector_z_nr_slurp(cw, ZT_MPZ)
-                elif self._type == mat_gso_long_dd:
-                    vector_fp_nr_barf(cv, v, FT_DD)
-                    sig_on()
-                    (<MatGSO_c[Z_NR[long],FP_NR[dd_t]]*>self._core.long_dd).babai(cw.long, cv.dd, start, dimension, gso)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_LONG)
-                # # https://github.com/fplll/fplll/issues/493
-                # elif self._type == mat_gso_long_qd:
-                #     vector_fp_nr_barf(cv, v, FT_QD)
-                #     sig_on()
-                #     (<MatGSO_c[Z_NR[long],FP_NR[qd_t]]*>self._core.long_qd).babai(cw.long, cv.qd, start, dimension, gso)
-                #     sig_off()
-                #     return vector_z_nr_slurp(cw, ZT_LONG)
+            if self._type == mat_gso_mpz_dd:
+                vector_fp_nr_barf(cv, v, FT_DD)
+                sig_on()
+                (<MatGSO_c[Z_NR[mpz_t],FP_NR[dd_t]]*>self._core.mpz_dd).babai(cw.mpz, cv.dd, start, dimension, gso)
+                sig_off()
+                return vector_z_nr_slurp(cw, ZT_MPZ)
+            # # https://github.com/fplll/fplll/issues/493
+            # elif self._type == mat_gso_mpz_qd:
+            #     vector_fp_nr_barf(cv, v, FT_QD)
+            #     sig_on()
+            #     (<MatGSO_c[Z_NR[mpz_t],FP_NR[qd_t]]*>self._core.mpz_qd).babai(cw.mpz, cv.qd, start, dimension, gso)
+            #     sig_off()
+            #     return vector_z_nr_slurp(cw, ZT_MPZ)
+            elif self._type == mat_gso_long_dd:
+                vector_fp_nr_barf(cv, v, FT_DD)
+                sig_on()
+                (<MatGSO_c[Z_NR[long],FP_NR[dd_t]]*>self._core.long_dd).babai(cw.long, cv.dd, start, dimension, gso)
+                sig_off()
+                return vector_z_nr_slurp(cw, ZT_LONG)
+            # # https://github.com/fplll/fplll/issues/493
+            # elif self._type == mat_gso_long_qd:
+            #     vector_fp_nr_barf(cv, v, FT_QD)
+            #     sig_on()
+            #     (<MatGSO_c[Z_NR[long],FP_NR[qd_t]]*>self._core.long_qd).babai(cw.long, cv.qd, start, dimension, gso)
+            #     sig_off()
+            #     return vector_z_nr_slurp(cw, ZT_LONG)
 
             raise NotImplementedError
         else:
@@ -2465,14 +2090,7 @@ cdef class MatGSO:
                 sig_off()
                 return vector_z_nr_slurp(cw, ZT_MPZ)
             elif self._type == mat_gso_mpz_ld:
-                IF HAVE_LONG_DOUBLE:
-                    vector_fp_nr_barf(cv, v, FT_LONG_DOUBLE)
-                    sig_on()
-                    self._core.mpz_ld.babai(cw.mpz, cv.ld, start, dimension)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_MPZ)
-                ELSE:
-                    raise RuntimeError("Float type long double not supported.")
+                raise RuntimeError("Float type long double not supported.")
             elif self._type == mat_gso_mpz_dpe:
                 vector_fp_nr_barf(cv, v, FT_DPE)
                 sig_on()
@@ -2492,14 +2110,7 @@ cdef class MatGSO:
                 sig_off()
                 return vector_z_nr_slurp(cw, ZT_LONG)
             elif self._type == mat_gso_long_ld:
-                IF HAVE_LONG_DOUBLE:
-                    vector_fp_nr_barf(cv, v, FT_LONG_DOUBLE)
-                    sig_on()
-                    self._core.long_ld.babai(cw.long, cv.ld, start, dimension)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_LONG)
-                ELSE:
-                    raise RuntimeError("Float type long double not supported.")
+                raise RuntimeError("Float type long double not supported.")
             elif self._type == mat_gso_long_dpe:
                 vector_fp_nr_barf(cv, v, FT_DPE)
                 sig_on()
@@ -2513,31 +2124,30 @@ cdef class MatGSO:
                 sig_off()
                 return vector_z_nr_slurp(cw, ZT_LONG)
 
-            IF HAVE_QD:
-                if self._type == mat_gso_mpz_dd:
-                    vector_fp_nr_barf(cv, v, FT_DD)
-                    sig_on()
-                    self._core.mpz_dd.babai(cw.mpz, cv.dd, start, dimension)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_MPZ)
-                elif self._type == mat_gso_mpz_qd:
-                    vector_fp_nr_barf(cv, v, FT_QD)
-                    sig_on()
-                    self._core.mpz_qd.babai(cw.mpz, cv.qd, start, dimension)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_MPZ)
-                elif self._type == mat_gso_long_dd:
-                    vector_fp_nr_barf(cv, v, FT_DD)
-                    sig_on()
-                    self._core.long_dd.babai(cw.long, cv.dd, start, dimension)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_LONG)
-                elif self._type == mat_gso_long_qd:
-                    vector_fp_nr_barf(cv, v, FT_QD)
-                    sig_on()
-                    self._core.long_qd.babai(cw.long, cv.qd, start, dimension)
-                    sig_off()
-                    return vector_z_nr_slurp(cw, ZT_LONG)
+            if self._type == mat_gso_mpz_dd:
+                vector_fp_nr_barf(cv, v, FT_DD)
+                sig_on()
+                self._core.mpz_dd.babai(cw.mpz, cv.dd, start, dimension)
+                sig_off()
+                return vector_z_nr_slurp(cw, ZT_MPZ)
+            elif self._type == mat_gso_mpz_qd:
+                vector_fp_nr_barf(cv, v, FT_QD)
+                sig_on()
+                self._core.mpz_qd.babai(cw.mpz, cv.qd, start, dimension)
+                sig_off()
+                return vector_z_nr_slurp(cw, ZT_MPZ)
+            elif self._type == mat_gso_long_dd:
+                vector_fp_nr_barf(cv, v, FT_DD)
+                sig_on()
+                self._core.long_dd.babai(cw.long, cv.dd, start, dimension)
+                sig_off()
+                return vector_z_nr_slurp(cw, ZT_LONG)
+            elif self._type == mat_gso_long_qd:
+                vector_fp_nr_barf(cv, v, FT_QD)
+                sig_on()
+                self._core.long_qd.babai(cw.long, cv.qd, start, dimension)
+                sig_off()
+                return vector_z_nr_slurp(cw, ZT_LONG)
 
             raise NotImplementedError
 

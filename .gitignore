@@ -68,3 +68,7 @@ target/
 /activate
 /fpylll-env
 /fpylll-fplll
+
+**/*.DS_Store
+# dev-mode editable executables
+**/*.so

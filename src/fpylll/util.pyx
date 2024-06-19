@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-include "fpylll/config.pxi"
-
 from contextlib import contextmanager
 
 
@@ -21,9 +19,8 @@ from math import log, exp, lgamma, pi
 from math import sqrt as sqrtf
 from libcpp.functional cimport function
 
-IF HAVE_QD:
-    from fpylll.qd.qd cimport dd_real, qd_real
-    from fpylll.fplll.fplll cimport FT_DD, FT_QD
+from fpylll.qd.qd cimport dd_real, qd_real
+from fpylll.fplll.fplll cimport FT_DD, FT_QD
 
 cdef extern from "util_helper.h":
     function[extenum_fc_enumerate] void_ptr_to_function(void *ptr)
@@ -46,11 +43,10 @@ cdef object check_float_type(object float_type):
         return FT_LONG_DOUBLE
     if float_type == "dpe":
         return FT_DPE
-    IF HAVE_QD:
-        if float_type == "dd":
-            return FT_DD
-        if float_type == "qd":
-            return FT_QD
+    if float_type == "dd":
+        return FT_DD
+    if float_type == "qd":
+        return FT_QD
     if float_type == "mpfr":
         return FT_MPFR
 
@@ -174,16 +170,12 @@ def get_precision(float_type="mpfr"):
 
     if float_type_ == FT_DOUBLE:
         return FP_NR[double].get_prec()
-    IF HAVE_LONG_DOUBLE:
-        if float_type_ == FT_LONG_DOUBLE:
-            return FP_NR[longdouble].get_prec()
     if float_type_ == FT_DPE:
         return FP_NR[dpe_t].get_prec()
-    IF HAVE_QD:
-        if float_type_ == FT_DD:
-            return FP_NR[dd_real].get_prec()
-        if float_type_ == FT_QD:
-            return FP_NR[qd_real].get_prec()
+    if float_type_ == FT_DD:
+        return FP_NR[dd_real].get_prec()
+    if float_type_ == FT_QD:
+        return FP_NR[qd_real].get_prec()
     if float_type_ == FT_MPFR:
         return FP_NR[mpfr_t].get_prec()
     raise ValueError("Floating point type '%s' unknown."%float_type)
@@ -317,7 +309,7 @@ cpdef set_external_enumerator(enumerator):
 
     We grab the external enumeration function
 
-    >>> fn = enumlib._Z17enumlib_enumerateidSt8functionIFvPdmbS0_S0_EES_IFddS0_EES_IFvdS0_iEEbb # doctest: +SKIP
+    >>> fn = enumlib._Z17enumlib_enumerateidSt8functionifvPdmbS0_S0_EES_ifddS0_EES_ifvdS0_iEEbb # doctest: +SKIP
     and pass it to FPLLL
 
     >>> FPLLL.set_external_enumerator(fn)  # doctest: +SKIP

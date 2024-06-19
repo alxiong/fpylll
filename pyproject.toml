@@ -1,5 +1,31 @@
 [build-system]
-requires = ["setuptools",
-            "Cython",
-            "cysignals"]
+requires = [
+    "setuptools",
+    "wheel",
+    "Cython",
+    "cysignals",
+    "numpy",
+]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "fpylll"
+authors = [{ name = "Martin R. Albrecht", email = "fplll-devel@googlegroups.com" }]
+description = "A Python interface for https://github.com/fplll/fplll"
+license = { text = "GNU General Public License, version 2 or later" }
+urls = { Homepage = "https://github.com/fplll/fpylll" }
+# dynamic metadata
+dynamic = ["version", "readme"]
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "Sphinx>=1.6", "matplotlib", "ipython"]
+
+[tool.setuptools.dynamic]
+version = { attr = "fpylll.__version__" }
+readme = { file = ["README.rst"] }
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["fpylll", "fpylll.gmp", "fpylll.fplll", "fpylll.algorithms", "fpylll.tools"]
+# FIXME: this doesn't work, not sure why
+# exclude-package-data = { "*" = ["*.so", "*.py[cod]"]}

@@ -23,8 +23,6 @@ EXAMPLE::
 ..  moduleauthor:: Martin R.  Albrecht <martinralbrecht+fpylll@googlemail.com>
 """
 
-include "fpylll/config.pxi"
-
 from libcpp cimport bool
 from libcpp.vector cimport vector
 from math import log, exp
@@ -48,12 +46,8 @@ from .fplll cimport PRUNER_SINGLE, PRUNER_HALF
 from fpylll.util import adjust_radius_to_gh_bound, precision, FPLLL
 from fpylll.util cimport check_float_type, check_precision, check_pruner_metric
 
-IF HAVE_LONG_DOUBLE:
-    from .decl cimport nr_ld, ld_t
-
-IF HAVE_QD:
-    from .decl cimport nr_dd, nr_qd, dd_t, qd_t
-    from .fplll cimport FT_DD, FT_QD
+from .decl cimport nr_dd, nr_qd, dd_t, qd_t
+from .fplll cimport FT_DD, FT_QD
 
 
 cdef class PruningParams:
@@ -292,15 +286,7 @@ cdef class Pruner:
             self._core.d = new Pruner_c[FP_NR[d_t]](enumeration_radius_.d, preproc_cost_.d, gso_r_,
                                                     target_.d, metric_, flags)
         elif float_type_ == FT_LONG_DOUBLE:
-            IF HAVE_LONG_DOUBLE:
-                self._type = nr_ld
-                enumeration_radius_.ld = enumeration_radius
-                preproc_cost_.ld = preproc_cost
-                target_.ld = target
-                self._core.ld = new Pruner_c[FP_NR[ld_t]](enumeration_radius_.ld, preproc_cost_.ld, gso_r_,
-                                                          target_.ld, metric_, flags)
-            ELSE:
-                raise ValueError("Float type '%s' not understood." % float_type)
+            raise ValueError("Float type '%s' not understood." % float_type)
         elif float_type_ == FT_DPE:
             self._type = nr_dpe
             enumeration_radius_.dpe = enumeration_radius
@@ -316,40 +302,33 @@ cdef class Pruner:
             self._core.mpfr = new Pruner_c[FP_NR[mpfr_t]](enumeration_radius_.mpfr, preproc_cost_.mpfr, gso_r_,
                                                           target_.mpfr, metric_, flags)
         else:
-            IF HAVE_QD:
-                if float_type_ == FT_DD:
-                    self._type = nr_dd
-                    enumeration_radius_.dd = enumeration_radius
-                    preproc_cost_.dd = preproc_cost
-                    target_.dd = target
-                    self._core.dd = new Pruner_c[FP_NR[dd_t]](enumeration_radius_.dd, preproc_cost_.dd, gso_r_,
-                                                              target_.dd, metric_, flags)
+            if float_type_ == FT_DD:
+                self._type = nr_dd
+                enumeration_radius_.dd = enumeration_radius
+                preproc_cost_.dd = preproc_cost
+                target_.dd = target
+                self._core.dd = new Pruner_c[FP_NR[dd_t]](enumeration_radius_.dd, preproc_cost_.dd, gso_r_,
+                                                            target_.dd, metric_, flags)
 
-                elif float_type_ == FT_QD:
-                    self._type = nr_qd
-                    enumeration_radius_.qd = enumeration_radius
-                    preproc_cost_.qd = preproc_cost
-                    target_.qd = target
-                    self._core.qd = new Pruner_c[FP_NR[qd_t]](enumeration_radius_.qd, preproc_cost_.qd, gso_r_,
-                                                              target_.qd, metric_, flags)
-                else:
-                    raise ValueError("Float type '%s' not understood."%float_type)
-            ELSE:
+            elif float_type_ == FT_QD:
+                self._type = nr_qd
+                enumeration_radius_.qd = enumeration_radius
+                preproc_cost_.qd = preproc_cost
+                target_.qd = target
+                self._core.qd = new Pruner_c[FP_NR[qd_t]](enumeration_radius_.qd, preproc_cost_.qd, gso_r_,
+                                                            target_.qd, metric_, flags)
+            else:
                 raise ValueError("Float type '%s' not understood."%float_type)
 
     def __dealloc__(self):
         if self._type == nr_d:
             del self._core.d
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                del self._core.ld
         if self._type == nr_dpe:
             del self._core.dpe
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                del self._core.dd
-            if self._type == nr_qd:
-                del self._core.qd
+        if self._type == nr_dd:
+            del self._core.dd
+        if self._type == nr_qd:
+            del self._core.qd
         if self._type == nr_mpfr:
             del self._core.mpfr
 
@@ -398,28 +377,21 @@ cdef class Pruner:
             self._core.d.optimize_coefficients(pr_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                self._core.ld.optimize_coefficients(pr_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             self._core.dpe.optimize_coefficients(pr_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                self._core.dd.optimize_coefficients(pr_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                self._core.qd.optimize_coefficients(pr_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            self._core.dd.optimize_coefficients(pr_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            self._core.qd.optimize_coefficients(pr_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             self._core.mpfr.optimize_coefficients(pr_)
@@ -475,28 +447,21 @@ cdef class Pruner:
             self._core.d.optimize_coefficients_evec(pr_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                self._core.ld.optimize_coefficients_evec(pr_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             self._core.dpe.optimize_coefficients_evec(pr_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                self._core.dd.optimize_coefficients_evec(pr_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                self._core.qd.optimize_coefficients_evec(pr_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            self._core.dd.optimize_coefficients_evec(pr_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            self._core.qd.optimize_coefficients_evec(pr_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             self._core.mpfr.optimize_coefficients_evec(pr_)
@@ -553,28 +518,21 @@ cdef class Pruner:
             self._core.d.optimize_coefficients_full(pr_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                self._core.ld.optimize_coefficients_full(pr_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             self._core.dpe.optimize_coefficients_full(pr_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                self._core.dd.optimize_coefficients_full(pr_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                self._core.qd.optimize_coefficients_full(pr_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            self._core.dd.optimize_coefficients_full(pr_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            self._core.qd.optimize_coefficients_full(pr_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             self._core.mpfr.optimize_coefficients_full(pr_)
@@ -622,28 +580,21 @@ cdef class Pruner:
             self._core.d.optimize_coefficients_cost_vary_prob(pr_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                self._core.ld.optimize_coefficients_cost_vary_prob(pr_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             self._core.dpe.optimize_coefficients_cost_vary_prob(pr_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                self._core.dd.optimize_coefficients_cost_vary_prob(pr_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                self._core.qd.optimize_coefficients_cost_vary_prob(pr_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            self._core.dd.optimize_coefficients_cost_vary_prob(pr_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            self._core.qd.optimize_coefficients_cost_vary_prob(pr_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             self._core.mpfr.optimize_coefficients_cost_vary_prob(pr_)
@@ -693,28 +644,21 @@ cdef class Pruner:
             self._core.d.optimize_coefficients_cost_fixed_prob(pr_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                self._core.ld.optimize_coefficients_cost_fixed_prob(pr_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             self._core.dpe.optimize_coefficients_cost_fixed_prob(pr_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                self._core.dd.optimize_coefficients_cost_fixed_prob(pr_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                self._core.qd.optimize_coefficients_cost_fixed_prob(pr_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            self._core.dd.optimize_coefficients_cost_fixed_prob(pr_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            self._core.qd.optimize_coefficients_cost_fixed_prob(pr_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             self._core.mpfr.optimize_coefficients_cost_fixed_prob(pr_)
@@ -766,28 +710,21 @@ cdef class Pruner:
             cost = self._core.d.single_enum_cost(pr_, &detailed_cost_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                cost = self._core.ld.single_enum_cost(pr_, &detailed_cost_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             cost = self._core.dpe.single_enum_cost(pr_, &detailed_cost_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                cost = self._core.dd.single_enum_cost(pr_, &detailed_cost_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                cost = self._core.qd.single_enum_cost(pr_, &detailed_cost_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            cost = self._core.dd.single_enum_cost(pr_, &detailed_cost_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            cost = self._core.qd.single_enum_cost(pr_, &detailed_cost_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             cost = self._core.mpfr.single_enum_cost(pr_, &detailed_cost_)
@@ -835,28 +772,21 @@ cdef class Pruner:
             cost = self._core.d.repeated_enum_cost(pr_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                cost = self._core.ld.repeated_enum_cost(pr_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             cost = self._core.dpe.repeated_enum_cost(pr_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                cost = self._core.dd.repeated_enum_cost(pr_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                cost = self._core.qd.repeated_enum_cost(pr_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            cost = self._core.dd.repeated_enum_cost(pr_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            cost = self._core.qd.repeated_enum_cost(pr_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             cost = self._core.mpfr.repeated_enum_cost(pr_,)
@@ -895,28 +825,21 @@ cdef class Pruner:
             r = self._core.d.measure_metric(pr_)
             called = True
             sig_off()
-        IF HAVE_LONG_DOUBLE:
-            if self._type == nr_ld:
-                sig_on()
-                r = self._core.ld.measure_metric(pr_)
-                called = True
-                sig_off()
         if self._type == nr_dpe:
             sig_on()
             r = self._core.dpe.measure_metric(pr_)
             called = True
             sig_off()
-        IF HAVE_QD:
-            if self._type == nr_dd:
-                sig_on()
-                r = self._core.dd.measure_metric(pr_)
-                called = True
-                sig_off()
-            elif self._type == nr_qd:
-                sig_on()
-                r = self._core.qd.measure_metric(pr_)
-                called = True
-                sig_off()
+        if self._type == nr_dd:
+            sig_on()
+            r = self._core.dd.measure_metric(pr_)
+            called = True
+            sig_off()
+        elif self._type == nr_qd:
+            sig_on()
+            r = self._core.qd.measure_metric(pr_)
+            called = True
+            sig_off()
         if self._type == nr_mpfr:
             sig_on()
             r = self._core.mpfr.measure_metric(pr_,)
@@ -1004,13 +927,6 @@ def prune(double enumeration_radius, double preproc_cost, gso_r, double target,
                                gso_r_, target, metric, flags)
         sig_off()
         return pruning
-    IF HAVE_LONG_DOUBLE:
-        if ft == FT_LONG_DOUBLE:
-            sig_on()
-            prune_c[FP_NR[longdouble]]((<PruningParams>pruning)._core, enumeration_radius, preproc_cost,
-                                       gso_r_, target, metric, flags)
-            sig_off()
-            return pruning
     if ft == FT_DPE:
         sig_on()
         prune_c[FP_NR[dpe_t]]((<PruningParams>pruning)._core, enumeration_radius, preproc_cost,
@@ -1023,19 +939,18 @@ def prune(double enumeration_radius, double preproc_cost, gso_r, double target,
                                gso_r_, target, metric, flags)
         sig_off()
         return pruning
-    IF HAVE_QD:
-            if ft == FT_DD:
-                sig_on()
-                prune_c[FP_NR[dd_t]]((<PruningParams>pruning)._core, enumeration_radius, preproc_cost,
-                                     gso_r_, target, metric, flags)
-                sig_off()
-                return pruning
-            elif ft == FT_QD:
-                sig_on()
-                prune_c[FP_NR[qd_t]]((<PruningParams>pruning)._core, enumeration_radius, preproc_cost,
-                                     gso_r_, target, metric, flags)
-                sig_off()
-                return pruning
+    if ft == FT_DD:
+        sig_on()
+        prune_c[FP_NR[dd_t]]((<PruningParams>pruning)._core, enumeration_radius, preproc_cost,
+                                gso_r_, target, metric, flags)
+        sig_off()
+        return pruning
+    elif ft == FT_QD:
+        sig_on()
+        prune_c[FP_NR[qd_t]]((<PruningParams>pruning)._core, enumeration_radius, preproc_cost,
+                                gso_r_, target, metric, flags)
+        sig_off()
+        return pruning
 
 
 def svp_probability(pr, float_type="double"):
@@ -1052,18 +967,14 @@ def svp_probability(pr, float_type="double"):
 
     if ft == FT_DOUBLE:
         return svp_probability_c[FP_NR[double]]((<PruningParams>pr)._core.coefficients).get_d()
-    IF HAVE_LONG_DOUBLE:
-        if ft == FT_LONG_DOUBLE:
-            return svp_probability_c[FP_NR[longdouble]]((<PruningParams>pr)._core.coefficients).get_d()
     if ft == FT_DPE:
         return svp_probability_c[FP_NR[dpe_t]]((<PruningParams>pr)._core.coefficients).get_d()
     if ft == FT_MPFR:
         return svp_probability_c[FP_NR[mpfr_t]]((<PruningParams>pr)._core.coefficients).get_d()
-    IF HAVE_QD:
-        if ft == FT_DD:
-            return svp_probability_c[FP_NR[dd_t]]((<PruningParams>pr)._core.coefficients).get_d()
-        elif ft == FT_QD:
-            return svp_probability_c[FP_NR[qd_t]]((<PruningParams>pr)._core.coefficients).get_d()
+    if ft == FT_DD:
+        return svp_probability_c[FP_NR[dd_t]]((<PruningParams>pr)._core.coefficients).get_d()
+    elif ft == FT_QD:
+        return svp_probability_c[FP_NR[qd_t]]((<PruningParams>pr)._core.coefficients).get_d()
 
     raise ValueError("Float type '%s' not understood."%float_type)
 

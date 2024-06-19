@@ -1,6 +1,7 @@
 global-include README.rst requirements.txt suggestions.txt
 global-include setup.py *.pyx
 graft src
+exclude **/*.so **/*.py[cod] **/*.DS_Store
 include tests/test_*
 include tests/tools.py
 include LICENSE

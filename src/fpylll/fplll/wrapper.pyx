@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-include "fpylll/config.pxi"
-
-
 from cysignals.signals cimport sig_on, sig_off
 
 from .fplll cimport Matrix, Z_NR, mpz_t, ZT_MPZ
