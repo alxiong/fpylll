@@ -14,6 +14,7 @@ authors = [{ name = "Martin R. Albrecht", email = "fplll-devel@googlegroups.com"
 description = "A Python interface for https://github.com/fplll/fplll"
 license = { text = "GNU General Public License, version 2 or later" }
 urls = { Homepage = "https://github.com/fplll/fpylll" }
+dependencies = ["setuptools", "Cython>=3.0", "cysignals", "numpy"]
 # dynamic metadata
 dynamic = ["version", "readme"]
 
