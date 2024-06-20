@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-jobs="-j 4 "
+jobs="-j 8 "
 if [ "$1" = "-j" ]; then
    jobs="-j $2 "
 fi
@@ -57,11 +57,10 @@ EOF
 deactivate
 source ./activate
 
-git clone https://github.com/fplll/fplll fpylll-fplll
+git clone https://github.com/alxiong/fplll fpylll-fplll
 cd fpylll-fplll || exit
-./autogen.sh
-./configure --prefix="$VIRTUAL_ENV" $CONFIGURE_FLAGS
-make clean
+mkdir build && cd build/
+cmake -DMAKE_INSTALL_PREFIX=$VIRTUAL_ENV ..
 make $jobs
 
 retval=$?
@@ -79,14 +78,9 @@ if [ $retval -ne 0 ]; then
     exit 3 # 3 is the exit value if installing fplll failed.
 fi
 
-cd ..
+cd ../..
 
-$PIP install -r requirements.txt
-$PIP install -r suggestions.txt
-
-$PYTHON setup.py clean
-$PYTHON setup.py build $jobs || $PYTHON setup.py build_ext
-$PYTHON setup.py install
+$PIP install .
 
 echo "Don't forget to activate environment each time:"
 echo " source ./activate"

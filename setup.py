@@ -118,6 +118,7 @@ extensions = [
     Extension("fpylll.util", ["src/fpylll/util.pyx"]),
     Extension("fpylll.io", ["src/fpylll/io.pyx"]),
     Extension("fpylll.config", ["src/fpylll/config.pyx"]),
+    Extension("fpylll.foo", ["src/fpylll/foo.pyx"]),
 ]
 if have_numpy:
     extensions.append(Extension("fpylll.numpy", ["src/fpylll/numpy.pyx"]))

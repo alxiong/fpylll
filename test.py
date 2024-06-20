@@ -1,9 +1,11 @@
+import fpylll
 from fpylll import IntegerMatrix, LLL, FPLLL
 from copy import copy
 import time
 from multiprocessing import Pool
 
 FPLLL.set_random_seed(42)
+
 
 def partial_lll(A: IntegerMatrix, k: int):
     """
@@ -17,13 +19,14 @@ def partial_lll(A: IntegerMatrix, k: int):
     aggregated = IntegerMatrix(n, n)
 
     for idx in range(k):
-        sub_A = A.submatrix(idx * n/k, 0, (idx+1) * n/k, n)
+        sub_A = A.submatrix(idx * n / k, 0, (idx + 1) * n / k, n)
         reduced_sub_A = LLL.reduction(sub_A)
-        for i in range(n//k):
+        for i in range(n // k):
             for j in range(n):
-                aggregated[idx * n/k + i, j] = reduced_sub_A[i, j]
+                aggregated[idx * n / k + i, j] = reduced_sub_A[i, j]
 
     return aggregated
+
 
 def par_partial_lll(A: IntegerMatrix, k: int):
     """
@@ -37,13 +40,15 @@ def par_partial_lll(A: IntegerMatrix, k: int):
 
     reduced_sub_bases = None
     with Pool(k) as p:
-        sub_matrix = [A.submatrix(idx * n/k, 0, (idx+1) * n/k, n) for idx in range(k)]
+        sub_matrix = [
+            A.submatrix(idx * n / k, 0, (idx + 1) * n / k, n) for idx in range(k)
+        ]
         reduced_sub_bases = p.map(LLL.reduction, sub_matrix)
 
     for idx, reduced_sub_base in enumerate(reduced_sub_bases):
-        for i in range(n//k):
+        for i in range(n // k):
             for j in range(n):
-                aggregated[idx * n/k + i, j] = reduced_sub_base[i, j]
+                aggregated[idx * n / k + i, j] = reduced_sub_base[i, j]
 
     return aggregated
 
@@ -101,5 +106,6 @@ def main():
             f"{total_ratio_eight/num_samples:.6f} ({total_time_eight/num_samples * 1000:.3f} ms)"
         )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

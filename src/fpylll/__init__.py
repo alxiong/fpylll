@@ -12,4 +12,6 @@ from .fplll.pruner import Pruning
 from .util import ReductionError
 from .util import FPLLL
 
+from .foo import greet_py
+
 __version__ = "0.6.2"
