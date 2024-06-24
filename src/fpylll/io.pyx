@@ -10,6 +10,7 @@ from .gmp.mpz cimport mpz_t, mpz_set_si, mpz_set
 from cpython.version cimport PY_MAJOR_VERSION
 from .fplll.fplll cimport FT_DEFAULT, FT_DOUBLE, FT_LONG_DOUBLE, FT_DPE, FT_MPFR
 from .fplll.fplll cimport ZT_MPZ, ZT_LONG
+cimport gmpy2
 
 # Note: this uses fpylll's numpy and not the global numpy package.
 from .numpy import is_numpy_integer
@@ -37,12 +38,16 @@ cdef int assign_Z_NR_mpz(Z_NR[mpz_t]& t, value) except -1:
 cdef int assign_mpz(mpz_t& t, value) except -1:
     """
     Assign Python integer to Z_NR[mpz_t]
-    """     
+    """
     if isinstance(value, int) and PY_MAJOR_VERSION == 2:
-            mpz_set_si(t, PyInt_AS_LONG(value))
-            return 0
+        mpz_set_si(t, PyInt_AS_LONG(value))
+        return 0
     if isinstance(value, long):
         mpz_set_pylong(t, value)
+        return 0
+    if isinstance(value, gmpy2.mpz):
+        gmpy2.import_gmpy2()   # needed to initialize the C-API
+        mpz_set(t, gmpy2.MPZ(value))
         return 0
     if have_sage:
         if isinstance(value, Integer):
