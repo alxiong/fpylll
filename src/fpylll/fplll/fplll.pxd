@@ -173,6 +173,7 @@ cdef extern from "fplll/defs.h" namespace "fplll":
         RED_BKZ_FAILURE
         RED_BKZ_TIME_LIMIT
         RED_BKZ_LOOPS_LIMIT
+        RED_EARLY_RET
         RED_STATUS_MAX
 
     cdef enum LLLFlags:
@@ -589,6 +590,13 @@ cdef extern from "fplll/lll.h" namespace "fplll":
         int lll(int kappa_min, int kappa_start) nogil
         int lll(int kappa_min, int kappa_start, int kappa_end) nogil
         int lll(int kappa_min, int kappa_start, int kappa_end, int size_reduction_start) nogil
+        int lll_iter_init() nogil
+        int lll_iter_init(int kappa_min) nogil
+        int lll_iter_init(int kappa_min, int kappa_start) nogil
+        int lll_iter_init(int kappa_min, int kappa_start, int kappa_end) nogil
+        int lll_iter_init(int kappa_min, int kappa_start, int kappa_end, int size_reduction_start) nogil
+        int lll_iter_next() nogil
+        int lll_iter_next(int step_size) nogil
         int size_reduction() nogil
         int size_reduction(int kappa_min) nogil
         int size_reduction(int kappa_min, int kappa_end) nogil
@@ -599,6 +607,7 @@ cdef extern from "fplll/lll.h" namespace "fplll":
         int last_early_red
         int zeros
         int n_swaps
+        MatGSOInterface[ZT, FT]& m
 
     int is_lll_reduced[ZT, FT](MatGSOInterface[ZT, FT]& m, double delta, double eta) nogil
 

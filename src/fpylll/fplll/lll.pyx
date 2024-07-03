@@ -18,7 +18,7 @@ from .fplll cimport ZT_MPZ
 from .fplll cimport dpe_t
 from .fplll cimport Z_NR, FP_NR
 from .fplll cimport lll_reduction as lll_reduction_c
-from .fplll cimport RED_SUCCESS
+from .fplll cimport RED_SUCCESS, RED_EARLY_RET
 from .fplll cimport MatGSOInterface as MatGSOInterface_c
 from .fplll cimport LLLReduction as LLLReduction_c
 from .fplll cimport get_red_status_str
@@ -249,6 +249,135 @@ cdef class LLLReduction:
                 raise RuntimeError("LLLReduction object '%s' has no core."%self)
 
         if r:
+            raise ReductionError( str(get_red_status_str(r)) )
+
+    def lll_iter_init(self, int kappa_min=0, int kappa_start=0, int kappa_end=-1, int size_reduction_start=0):
+        if self.M.d == 0:
+            return
+        if kappa_end == -1:
+            kappa_end = self.M.d
+
+        cdef int r
+        if self._type == mat_gso_mpz_d:
+            sig_on()
+            self._core.mpz_d.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.mpz_d.status
+            sig_off()
+        elif self._type == mat_gso_mpz_ld:
+            raise RuntimeError("LLLReduction object '%s' has no core."%self)
+        elif self._type == mat_gso_mpz_dpe:
+            sig_on()
+            self._core.mpz_dpe.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.mpz_dpe.status
+            sig_off()
+        elif self._type == mat_gso_mpz_mpfr:
+            sig_on()
+            self._core.mpz_mpfr.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.mpz_mpfr.status
+            sig_off()
+        elif self._type == mat_gso_long_d:
+            sig_on()
+            self._core.long_d.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.long_d.status
+            sig_off()
+        elif self._type == mat_gso_long_ld:
+            raise RuntimeError("LLLReduction object '%s' has no core."%self)
+        elif self._type == mat_gso_long_dpe:
+            sig_on()
+            self._core.long_dpe.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.long_dpe.status
+            sig_off()
+        elif self._type == mat_gso_long_mpfr:
+            sig_on()
+            self._core.long_mpfr.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.long_mpfr.status
+            sig_off()
+        elif self._type == mat_gso_mpz_dd:
+            sig_on()
+            self._core.mpz_dd.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.mpz_dd.status
+            sig_off()
+        elif self._type == mat_gso_mpz_qd:
+            sig_on()
+            self._core.mpz_qd.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.mpz_qd.status
+            sig_off()
+        elif self._type == mat_gso_long_dd:
+            sig_on()
+            self._core.long_dd.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.long_dd.status
+            sig_off()
+        elif self._type == mat_gso_long_qd:
+            sig_on()
+            self._core.long_qd.lll_iter_init(kappa_min, kappa_start, kappa_end, size_reduction_start)
+            r = self._core.long_qd.status
+            sig_off()
+        else:
+            raise RuntimeError("LLLReduction object '%s' has no core."%self)
+
+        if r:
+            raise ReductionError( str(get_red_status_str(r)) )
+
+    def lll_iter_next(self, int step_size=1):
+        cdef int r
+        if self._type == mat_gso_mpz_d:
+            sig_on()
+            self._core.mpz_d.lll_iter_next(step_size)
+            r = self._core.mpz_d.status
+            sig_off()
+        elif self._type == mat_gso_mpz_ld:
+            raise RuntimeError("LLLReduction object '%s' has no core."%self)
+        elif self._type == mat_gso_mpz_dpe:
+            sig_on()
+            self._core.mpz_dpe.lll_iter_next(step_size)
+            r = self._core.mpz_dpe.status
+            sig_off()
+        elif self._type == mat_gso_mpz_mpfr:
+            sig_on()
+            self._core.mpz_mpfr.lll_iter_next(step_size)
+            r = self._core.mpz_mpfr.status
+            sig_off()
+        elif self._type == mat_gso_long_d:
+            sig_on()
+            self._core.long_d.lll_iter_next(step_size)
+            r = self._core.long_d.status
+            sig_off()
+        elif self._type == mat_gso_long_ld:
+            raise RuntimeError("LLLReduction object '%s' has no core."%self)
+        elif self._type == mat_gso_long_dpe:
+            sig_on()
+            self._core.long_dpe.lll_iter_next(step_size)
+            r = self._core.long_dpe.status
+            sig_off()
+        elif self._type == mat_gso_long_mpfr:
+            sig_on()
+            self._core.long_mpfr.lll_iter_next(step_size)
+            r = self._core.long_mpfr.status
+            sig_off()
+        elif self._type == mat_gso_mpz_dd:
+            sig_on()
+            self._core.mpz_dd.lll_iter_next(step_size)
+            r = self._core.mpz_dd.status
+            sig_off()
+        elif self._type == mat_gso_mpz_qd:
+            sig_on()
+            self._core.mpz_qd.lll_iter_next(step_size)
+            r = self._core.mpz_qd.status
+            sig_off()
+        elif self._type == mat_gso_long_dd:
+            sig_on()
+            self._core.long_dd.lll_iter_next(step_size)
+            r = self._core.long_dd.status
+            sig_off()
+        elif self._type == mat_gso_long_qd:
+            sig_on()
+            self._core.long_qd.lll_iter_next(step_size)
+            r = self._core.long_qd.status
+            sig_off()
+        else:
+            raise RuntimeError("LLLReduction object '%s' has no core."%self)
+
+        if r and r != RED_EARLY_RET:
             raise ReductionError( str(get_red_status_str(r)) )
 
     def size_reduction(self, int kappa_min=0, int kappa_end=-1, int size_reduction_start=0):
