@@ -11,11 +11,13 @@ from cysignals.signals cimport sig_on, sig_off
 
 from .fplll cimport Matrix, MatrixRow, Z_NR
 from fpylll.util cimport preprocess_indices, check_int_type
+from fpylll.util import to_mpz
 from fpylll.io cimport assign_Z_NR_mpz, assign_mpz, mpz_get_python
 
 from .fplll cimport IntType, ZT_MPZ, ZT_LONG, ZZ_mat
 
 import re
+import numpy as np
 from math import log10, ceil, sqrt, floor
 
 from .decl cimport z_long, z_mpz
@@ -656,10 +658,14 @@ cdef class IntegerMatrix:
         cdef int m = self._nrows()
         cdef int n = self._ncols()
 
+        is_npy = True if isinstance(A, np.ndarray) else False
         try:
             for i in range(m):
                 for j in range(n):
-                    self._set(i, j, A[i, j])
+                    if is_npy:
+                        self._set(i, j, to_mpz(A[i, j]))
+                    else:
+                        self._set(i, j, A[i, j])
         except TypeError:
             for i in range(m):
                 for j in range(n):

@@ -24,6 +24,11 @@ from fpylll.fplll.fplll cimport FT_DD, FT_QD
 from fpylll.fplll.fplll cimport RedStatus as RedStatus_c, LLLFlags as LLLFlags_c, LLLMethod as LLLMethod_c
 from enum import Enum
 
+import numpy as np
+from fpylll.gmp.mpz cimport mpz_init, mpz_clear, mpz_set_f
+from fpylll.gmp.mpf cimport mpf_init, mpf_init_set_d, mpf_clear, mpf_mul_2exp
+from fpylll.gmp.pylong cimport mpz_get_pyintlong
+
 cdef extern from "util_helper.h":
     function[extenum_fc_enumerate] void_ptr_to_function(void *ptr)
 
@@ -395,6 +400,45 @@ def threads(int th=1):
         yield get_threads()
     finally:
         set_threads(old_th)
+
+cdef inline void npy_float32_scale_to_mpz(mpz_t mpz_val, float32_t value):
+    cdef mpf_t mpf_val, mpf_scaled_val
+    mpf_init(mpf_scaled_val)
+    mpf_init_set_d(mpf_val, <double>value)
+
+    # MINVAL (subnormal) 1.40·10−45 ~= 2^-140 < 2^-150
+    mpf_mul_2exp(mpf_scaled_val, mpf_val, 150)
+    mpz_set_f(mpz_val, mpf_scaled_val)
+
+    mpf_clear(mpf_val)
+    mpf_clear(mpf_scaled_val)
+
+cdef inline void npy_float64_scale_to_mpz(mpz_t mpz_val, float64_t value):
+    cdef mpf_t mpf_val, mpf_scaled_val
+    mpf_init(mpf_scaled_val)
+    mpf_init_set_d(mpf_val, value)
+
+    # MINVAL (subnormal) 4.94·10−324 ~= 2^-1074 < 2^-1075
+    mpf_mul_2exp(mpf_scaled_val, mpf_val, 1075)
+    mpz_set_f(mpz_val, mpf_scaled_val)
+
+    mpf_clear(mpf_val)
+    mpf_clear(mpf_scaled_val)
+
+def to_mpz(x):
+    """
+    Scale np.float32/64 to an arbitrary-precision int such that no precision is lost
+    """
+    cdef mpz_t mpz_val
+    mpz_init(mpz_val)
+    if type(x) == np.float32:
+        npy_float32_scale_to_mpz(mpz_val, x)
+    elif type(x) == np.float64:
+        npy_float64_scale_to_mpz(mpz_val, x)
+    else:
+        return x
+
+    return mpz_get_pyintlong(&mpz_val[0])
 
 class FPLLL:
     set_precision = staticmethod(set_precision)
