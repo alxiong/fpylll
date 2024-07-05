@@ -26,7 +26,7 @@ from .fplll cimport is_lll_reduced
 from .fplll cimport FloatType
 
 from fpylll.util cimport check_float_type, check_delta, check_eta, check_precision
-from fpylll.util import ReductionError
+from fpylll.util import ReductionError, RedStatus
 
 from .decl cimport d_t
 from .decl cimport mat_gso_mpz_d, mat_gso_mpz_ld, mat_gso_mpz_dpe, mat_gso_mpz_mpfr
@@ -576,6 +576,31 @@ cdef class LLLReduction:
     @property
     def eta(self):
         return self._eta
+
+    @property
+    def status(self):
+        if self._type == mat_gso_mpz_d:
+            return RedStatus(self._core.mpz_d.status)
+        if self._type == mat_gso_mpz_dpe:
+            return RedStatus(self._core.mpz_dpe.status)
+        if self._type == mat_gso_mpz_dd:
+            return RedStatus(self._core.mpz_dd.status)
+        if self._type == mat_gso_mpz_qd:
+            return RedStatus(self._core.mpz_qd.status)
+        if self._type == mat_gso_mpz_mpfr:
+            return RedStatus(self._core.mpz_mpfr.status)
+
+        if self._type == mat_gso_long_d:
+            return RedStatus(self._core.long_d.status)
+        if self._type == mat_gso_long_dpe:
+            return RedStatus(self._core.long_dpe.status)
+        if self._type == mat_gso_long_dd:
+            return RedStatus(self._core.long_dd.status)
+        if self._type == mat_gso_long_qd:
+            return RedStatus(self._core.long_qd.status)
+        if self._type == mat_gso_long_mpfr:
+            return RedStatus(self._core.long_mpfr.status)
+        raise RuntimeError("LLLReduction object '%s' has no core."%self)
 
 
 def lll_reduction(IntegerMatrix B, U=None,

@@ -21,6 +21,8 @@ from libcpp.functional cimport function
 
 from fpylll.qd.qd cimport dd_real, qd_real
 from fpylll.fplll.fplll cimport FT_DD, FT_QD
+from fpylll.fplll.fplll cimport RedStatus as RedStatus_c, LLLFlags as LLLFlags_c, LLLMethod as LLLMethod_c
+from enum import Enum
 
 cdef extern from "util_helper.h":
     function[extenum_fc_enumerate] void_ptr_to_function(void *ptr)
@@ -408,3 +410,27 @@ class FPLLL:
 
     set_external_enumerator = staticmethod(set_external_enumerator)
     external_enumerator = staticmethod(external_enumerator)
+
+class RedStatus(Enum):
+    RED_SUCCESS = RedStatus_c.RED_SUCCESS
+    RED_GSO_FAILURE = RedStatus_c.RED_GSO_FAILURE
+    RED_BABAI_FAILURE = RedStatus_c.RED_BABAI_FAILURE
+    RED_LLL_FAILURE = RedStatus_c.RED_LLL_FAILURE
+    RED_ENUM_FAILURE = RedStatus_c.RED_ENUM_FAILURE
+    RED_BKZ_FAILURE = RedStatus_c.RED_BKZ_FAILURE
+    RED_BKZ_TIME_LIMIT = RedStatus_c.RED_BKZ_TIME_LIMIT
+    RED_BKZ_LOOPS_LIMIT = RedStatus_c.RED_BKZ_LOOPS_LIMIT
+    RED_EARLY_RET = RedStatus_c.RED_EARLY_RET
+    RED_STATUS_MAX = RedStatus_c.RED_STATUS_MAX
+
+class LLLFlags(Enum):
+    LLL_VERBOSE = LLLFlags_c.LLL_VERBOSE
+    LLL_EARLY_RED = LLLFlags_c.LLL_EARLY_RED
+    LLL_SIEGEL = LLLFlags_c.LLL_SIEGEL
+    LLL_DEFAULT = LLLFlags_c.LLL_DEFAULT
+
+class LLLMethod(Enum):
+    LM_WRAPPER = LLLMethod_c.LM_WRAPPER
+    LM_PROVED = LLLMethod_c.LM_PROVED
+    LM_HEURISTIC = LLLMethod_c.LM_HEURISTIC
+    LM_FAST = LLLMethod_c.LM_FAST
