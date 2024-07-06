@@ -627,7 +627,7 @@ cdef class IntegerMatrix:
         A.randomize(algorithm, **kwds)
         return A
 
-    def set_matrix(self, A):
+    def set_matrix(self, A, int start_row = 0, int start_col = 0):
         """Set this matrix from matrix-like object A.
 
         :param A: a matrix like object, with element access A[i,j] or A[i][j]
@@ -655,21 +655,37 @@ cdef class IntegerMatrix:
 
         """
         cdef int i, j
-        cdef int m = self._nrows()
-        cdef int n = self._ncols()
+        cdef int A_rows, A_cols
+        cdef int end_row = self._nrows()
+        cdef int end_col = self._ncols()
 
         is_npy = True if isinstance(A, np.ndarray) else False
+        if is_npy:
+            A_rows = A.shape[0]
+            A_cols = A.shape[1]
+        else:
+            A_rows = A.nrows
+            A_cols = A.ncols
+
+        if start_row < 0 or start_col < 0:
+            raise ValueError("start_row/col should be non-negative")
+        if start_row + A_rows > end_row or start_col + A_cols > end_col:
+            raise ValueError("too large submatrix or insert too deep")
+        else:
+            end_row = start_row + A_rows
+            end_col = start_col + A_cols
+
         try:
-            for i in range(m):
-                for j in range(n):
+            for i in range(A_rows):
+                for j in range(A_cols):
                     if is_npy:
-                        self._set(i, j, to_mpz(A[i, j]))
+                        self._set(start_row + i, start_col + j, to_mpz(A[i, j]))
                     else:
-                        self._set(i, j, A[i, j])
+                        self._set(start_row + i, start_col + j, A[i, j])
         except TypeError:
-            for i in range(m):
-                for j in range(n):
-                    self._set(i, j, A[i][j])
+            for i in range(A_rows):
+                for j in range(A_cols):
+                    self._set(start_row + i, start_col + j, A[i][j])
 
     def set_iterable(self, A):
         """Set this matrix from iterable A
