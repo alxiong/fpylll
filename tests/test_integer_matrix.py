@@ -35,3 +35,12 @@ def test_set_submatrix():
     for i in range(A_rows):
         for j in range(A_rows):
             assert B[i, j] == M[i+2, j+2]
+
+def test_imul():
+    n = 3
+    A = IntegerMatrix.random(n, "uniform", bits=30)
+    B = IntegerMatrix.from_matrix(A)
+    B *= 4
+    for i in range(n):
+        for j in range(n):
+            assert B[i, j] == 4 * A[i, j]

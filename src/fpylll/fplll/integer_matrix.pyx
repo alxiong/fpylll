@@ -360,6 +360,16 @@ cdef class IntegerMatrix:
         else:
             raise TypeError("Parameters arg0 and arg1 not understood")
 
+    def __imul__(self, int x):
+        """
+        Multiply every entry in the matrix by `x`
+        """
+        cdef int i, j
+        for i in range(self.nrows):
+            for j in range(self.ncols):
+                self[i, j] = x * self[i, j]
+        return self
+
     @classmethod
     def from_matrix(cls, A, nrows=None, ncols=None, **kwds):
         """Construct a new integer matrix from matrix-like object A
