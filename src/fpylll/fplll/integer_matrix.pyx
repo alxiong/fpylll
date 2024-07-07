@@ -762,6 +762,17 @@ cdef class IntegerMatrix:
                     A[i][j] = self._get(i, j)
         return A
 
+    def to_npy(self):
+        """
+        Write this matrix to an numpy ndarray
+        """
+        cdef int rows = self.nrows
+        cdef int cols = self.ncols
+        arr = np.empty([rows, cols], dtype=object)
+        for row in range(rows):
+            arr[row] = np.array(self[row])
+        return arr
+
     def __dealloc__(self):
         """
         Delete integer matrix

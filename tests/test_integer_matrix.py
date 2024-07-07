@@ -44,3 +44,11 @@ def test_imul():
     for i in range(n):
         for j in range(n):
             assert B[i, j] == 4 * A[i, j]
+
+def test_to_npy():
+    n = 3
+    A = IntegerMatrix.random(n, "uniform", bits=30)
+    print(A)
+    arr = A.to_npy()
+    print(arr)
+    print(f"shape: {arr.shape}, dtype: {arr.dtype}")
