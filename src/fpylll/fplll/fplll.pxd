@@ -795,6 +795,8 @@ cdef extern from "fplll/svpcvp.h" namespace "fplll":
     int closest_vector(ZZ_mat[mpz_t] b, vector[Z_NR[mpz_t]] &intTarget,
                        vector[Z_NR[mpz_t]]& sol_coord, CVPMethod method, int flags) nogil
 
+    int closest_vector(vector[Z_NR[mpz_t]] &solution, vector[Z_NR[mpz_t]] &sol_coord,
+                       ZZ_mat[mpz_t] &bases, const vector[Z_NR[mpz_t]] &target) nogil
 
 
 # BKZ

@@ -244,3 +244,35 @@ class CVP:
     closest_vector = staticmethod(closest_vector)
     DEFAULT = CVP_DEFAULT
     VERBOSE = CVP_VERBOSE
+
+    @staticmethod
+    def approximate(IntegerMatrix B, t):
+        """
+        Solve approximate SVP using Babai's Nearest Plane and LLL reduction
+
+        :param IntegerMatrix B: Input lattice basis.
+        :param t: Target point (∈ ZZ^n)
+        :returns: coordinates of the solution vector
+        """
+        if B._type != ZT_MPZ:
+            raise NotImplementedError("Only integer matrices over GMP integers (mpz_t) are supported.")
+
+        cdef vector[Z_NR[mpz_t]] target, sol_coord, solution
+        cdef int r = 0
+
+        # convert target values to mpz (in case they are not already)
+        target.resize(len(t))
+        for i in range(len(t)):
+            assign_Z_NR_mpz(target[i], t[i])
+
+        sig_on()
+        r = closest_vector_c(solution, sol_coord, B._core.mpz[0], target)
+        sig_off()
+
+        if r:
+            raise ReductionError("CVP solver returned an error ({:d})".format(r))
+
+        cdef list v = []
+        for i in range(solution.size()):
+            v.append(mpz_get_python(solution[i].get_data()))
+        return v
